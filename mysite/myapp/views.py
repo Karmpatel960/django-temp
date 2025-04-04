@@ -97,8 +97,7 @@ def facultyRegister(request):
 
             # Registration Confirmation Email
             role_user_email = user.email
-            # role_user_email = 'rahul.agarwal31101999@gmail.com'
-            mail_subject = "[Welcome Faculty] - You have successfully registered to VirtualClassroom!!"
+            mail_subject = "[Welcome Faculty] - You have successfully registered to Atlas - VirtualClassroom!!"
             message = render_to_string('register_successful.html', {
                 'firstname': user.first_name,
                 'lastname': user.last_name,
@@ -136,16 +135,9 @@ def facultyDashboard(request):
 
         # Email Testing
         if request.method=='POST':
-            # send_mail(
-            #             'Daily Rozgaar',
-            #             'Thank you for showing interest in our website. You have been successfully registered. Feel free to call for any house help and avail our facilities at a rational price !',
-            #             'rahul.agarwal31101999@gmail.com',
-            #             ['adityaverma0198@gmail.com'],
-            #             fail_silently = False
-            #             )
 
-            role_user_email = 'adityaverma0198@gmail.com'
-            mail_subject = "Welcome To VC - Virtual Classroom"
+            role_user_email = 'hcrana2003.cr@gmail.com'
+            mail_subject = "Welcome To Atlas - Virtual Classroom"
             message = render_to_string('register_successful.html', {
                 'user': role_user_email,
                 'firstname': user.first_name,
