@@ -1,4 +1,4 @@
-django==3.0
+django==3.2
 django-phonenumber-field
 phonenumbers
 email_validator
