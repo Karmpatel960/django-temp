@@ -29,6 +29,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - static_volume:/app/static:ro
       - media_volume:/app/media:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Mount SSL certificates if using HTTPS
     ports:
       - "80:80"
       - "443:443"  # For HTTPS
@@ -39,8 +40,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    volumes:
-      - ./ssl:/etc/nginx/ssl:ro  # Mount SSL certificates if using HTTPS
 
   s3sync:
     image: amazon/aws-cli:latest
