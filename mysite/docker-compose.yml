@@ -25,8 +25,6 @@ services:
       - media_volume:/app/media
     ports:
       - "80:80"
-    depends_on:
-      - web
 
   s3sync:
     image: amazon/aws-cli:latest
