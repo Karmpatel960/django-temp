@@ -56,7 +56,7 @@ docker-compose --version
 # Clone the repository
 echo -e "${GREEN}Cloning your repository...${NC}"
 git clone -b $GIT_BRANCH $GIT_REPO_URL django-project
-cd django-project
+cd django-project/mysite
 
 # Make entrypoint.sh executable (if it exists)
 if [ -f entrypoint.sh ]; then
