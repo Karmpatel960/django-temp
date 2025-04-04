@@ -8,8 +8,6 @@ from datetime import datetime,date
 from django.contrib import messages
 from django.db.models import Value,CharField
 from django.template.defaulttags import register
-# from mysite.settings import EMAIL_HOST_USER
-# from django.core.mail import send_mail, EmailMessage
 
 
 from django.template.loader import render_to_string

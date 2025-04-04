@@ -12,6 +12,24 @@
     {% block extrahead %}
     {% endblock %}
 
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#4154f1',
+              secondary: '#012970',
+              success: '#99B898',
+              danger: '#F52664',
+              warning: '#FFC300'
+            }
+          }
+        }
+      }
+    </script>
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 
@@ -37,16 +55,77 @@
 
     <!-- Template Main CSS File -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
-    <style media="screen">
-      body{
-          background-image: linear-gradient(to left bottom, #b4c0ee, #b9c5eb, #bfc9e8, #c5cee4, #ccd2e1, #ccd2e1, #ccd2e1, #ccd2e1, #c5cee4, #bfc9e8, #b9c5eb, #b4c0ee);
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
+    <style>
+      body {
+        background-image: linear-gradient(to left bottom, #b4c0ee, #b9c5eb, #bfc9e8, #c5cee4, #ccd2e1, #ccd2e1, #ccd2e1, #ccd2e1, #c5cee4, #bfc9e8, #b9c5eb, #b4c0ee);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
 
-      footer{
-          margin-top: auto;
+      footer {
+        margin-top: auto;
+      }
+
+      /* Enhanced Card Styles */
+      .card {
+        @apply bg-white rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl;
+      }
+
+      .card-icon {
+        @apply flex items-center justify-center w-16 h-16 rounded-full text-2xl transition-transform duration-300 hover:scale-110;
+      }
+
+      .nav-link {
+        @apply transition-colors duration-200 hover:text-primary;
+      }
+
+      .btn-primary {
+        @apply bg-primary text-white rounded-lg px-4 py-2 transition-all duration-200 hover:bg-opacity-90 hover:shadow-md;
+      }
+
+      /* Dashboard Cards */
+      .info-card {
+        @apply overflow-hidden;
+      }
+
+      .info-card .card-body {
+        @apply p-4;
+      }
+
+      .info-card .card-title {
+        @apply text-lg font-semibold text-secondary mb-3;
+      }
+
+      /* Header Styles */
+      .header {
+        @apply bg-white shadow-md;
+      }
+
+      .header-nav {
+        @apply flex items-center;
+      }
+
+      /* Breadcrumb Styles */
+      .breadcrumb {
+        @apply flex items-center space-x-2 text-sm text-gray-600;
+      }
+
+      .breadcrumb-item.active {
+        @apply text-primary;
+      }
+
+      /* Table Styles */
+      .table {
+        @apply w-full;
+      }
+
+      .table th {
+        @apply bg-gray-50 text-secondary font-semibold p-3;
+      }
+
+      .table td {
+        @apply p-3 border-b border-gray-100;
       }
     </style>
 </head>
