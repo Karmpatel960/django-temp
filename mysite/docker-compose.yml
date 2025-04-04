@@ -19,8 +19,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-    depends_on:
-      - nginx
 
   nginx:
     image: nginx:1.23-alpine
@@ -66,11 +64,15 @@ services:
       - sqlite_data:/data/db:ro
       - ./backups:/backups
     command: |
-      sh -c 'while true; do
-        cp /data/db/db.sqlite3 /backups/db-$$(date +%Y%m%d-%H%M%S).sqlite3;
-        find /backups -name "db-*.sqlite3" -mtime +7 -delete;
-        sleep 86400;
-      done'
+      sh -c 'cp /data/db/db.sqlite3 /backups/db-$$(date +%Y%m%d-%H%M%S).sqlite3 && 
+             find /backups -name "db-*.sqlite3" -mtime +7 -delete && 
+             sleep 86400 && while true; do
+               cp /data/db/db.sqlite3 /backups/db-$$(date +%Y%m%d-%H%M%S).sqlite3;
+               find /backups -name "db-*.sqlite3" -mtime +7 -delete;
+               sleep 86400;
+             done'
+    depends_on:
+      - web
 
 volumes:
   static_volume:
