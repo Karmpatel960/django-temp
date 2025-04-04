@@ -56,12 +56,23 @@ docker-compose --version
 # Clone the repository
 echo -e "${GREEN}Cloning your repository...${NC}"
 git clone -b $GIT_BRANCH $GIT_REPO_URL django-project
-cd django-project/mysite
+cd django-project
 
 # Make entrypoint.sh executable (if it exists)
 if [ -f entrypoint.sh ]; then
     echo -e "${GREEN}Making entrypoint.sh executable...${NC}"
     chmod +x entrypoint.sh
+fi
+
+# Check for docker-compose file and build containers
+if [ -f "docker-compose.yml" ]; then
+    echo -e "${GREEN}Found docker-compose.yml in root directory${NC}"
+elif [ -f "mysite/docker-compose.yml" ]; then
+    echo -e "${GREEN}Found docker-compose.yml in mysite directory${NC}"
+    cd mysite
+else
+    echo -e "${RED}Error: docker-compose.yml not found in either root or mysite directory${NC}"
+    exit 1
 fi
 
 # Build and start Docker containers
