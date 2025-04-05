@@ -1,84 +1,133 @@
 {% extends 'base.html' %}
 {% block title %}
-Admin Page
+Student Dashboard
 {% endblock %}
 {% block content %}
-{% load static %}
-<style media="screen">
-  .gradient-custom-2 {
-background-image: linear-gradient(to left bottom, #1b1e7b, #1f2685, #222f90, #26379a, #2940a5, #2940a5, #2940a5, #2940a5, #26379a, #222f90, #1f2685, #1b1e7b);
-}
+<style>
+  .stats-card {
+    background-color: var(--card-bg);
+    border: none;
+    box-shadow: 0 4px 20px var(--shadow-color);
+    transition: all 0.3s ease;
+  }
+  
+  .stats-card.from-primary {
+    background-image: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  }
+  
+  .stats-card.from-success {
+    background-image: linear-gradient(to right, var(--success-color), var(--success-light));
+  }
+  
+  .stats-card.from-warning {
+    background-image: linear-gradient(to right, var(--warning-color), var(--warning-light));
+  }
+  
+  .stats-card.from-info {
+    background-image: linear-gradient(to right, var(--info-color), var(--info-light));
+  }
+  
+  .card-icon {
+    background-color: var(--card-icon-bg);
+    border-radius: 50%;
+    padding: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .text-secondary {
+    color: var(--text-primary) !important;
+  }
+  
+  .text-gray-600 {
+    color: var(--text-secondary) !important;
+  }
+  
+  .border-gray-100 {
+    border-color: var(--border-color) !important;
+  }
+  
+  .hover\:bg-gray-50:hover {
+    background-color: var(--hover-bg) !important;
+  }
+  
+  .dropdown-menu {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 20px var(--shadow-color);
+  }
+  
+  .dropdown-divider {
+    border-color: var(--border-color);
+  }
 </style>
-  <main style="background-color: #eee;">
-    <div class="container">
-      <section class="h-100 gradient-form">
-          <div class="container py-5 h-100">
-            <div class="row d-flex justify-content-center align-items-center h-100">
-              <div class="col-xl-10">
-                <div class="card  text-black" style="border-radius:30px; ">
-                  <div class="row g-0">
 
-                    <div class="col-lg-6 d-flex align-items-center gradient-custom-2">
-                      <div class="text-white px-3 py-4 p-md-5 mx-md-0">
-                        <div class="img-container">
-                          <img src="{% static 'images/Tile1.png' %}" class="img-fluid" alt="">
-                          <h5><i>"A Classroom should be a place where a Mistake is not to be feared but viewed as a Learning Experience"</i></h5>
+<!-- ======= Header ======= -->
+<header id="header" class="header fixed-top d-flex align-items-center px-lg-5" style="background-color: var(--header-bg);">
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="{% url 'studentDashboard' %}" class="logo d-flex items-center space-x-2">
+      <i class="bi bi-book" style="color: var(--primary-color);"></i>
+      <span class="d-lg-block" style="color: var(--primary-color);">VirtualClassroom</span>
+    </a>
+  </div>
 
-                        </div>
-                        <!-- <h4 class="mb-4">We are more than just a company</h4>
-                        <p class="small mb-0">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p> -->
-                      </div>
-                    </div>
-                    <div class="col-lg-6">
-                      <div class="card-body p-md-5 mx-md-4">
-                        {% include 'partials/_alert.html' %}
-
-                        <a href="{% url 'landing' %}" class="btn btn-primary my-2" style="text-align:left; background-color:#1b1e7b; color:white; border-color:#1b1e7b;">
-                          <i class="bi bi-arrow-left"> &nbsp;</i>HOME</a><br>
-
-                        <div class="text-center">
-                          <img src="https://mdbootstrap.com/img/Photos/new-templates/bootstrap-login-form/lotus.png" style="width: 185px;" alt="logo">
-                          <h4 class="mt-1 pb-1">Welcome Student</h4>
-                          <h4 class="mt-1 mb-5 pb-1">Login To Your Account</h4>
-                        </div>
-
-                          <form class="row g-3 needs-validation" method='POST' novalidate>
-                            {% csrf_token %}
-
-                            <div class="col-12 my-2">
-                              <label for="yourEmail" class="form-label">EMAIL*</label>
-                              <input type="email" name="email" class="form-control" id="yourEmail" required>
-                              <div class="invalid-feedback">Please enter a valid Email adddress!</div>
-                            </div>
-
-                            <div class="col-12 my-2">
-                              <label for="yourPassword" class="form-label">PASSWORD*</label>
-                              <input type="password" name="password" class="form-control" id="yourPassword" required>
-                              <div class="invalid-feedback">Please enter your password!</div>
-                            </div>
-
-                            <div class="col-12 mt-lg-4 mt-sm-3 mb-1">
-                              <button class="btn btn-outline-primary w-100" name="submit" type="submit">LOGIN</button>
-                            </div>
-
-                          </form>
-
-                          <div class="d-flex align-items-center justify-content-center mt-lg-3 pb-4">
-                            <p class="mb-0 me-2">Don't have an account?</p>
-                            <a href="{% url 'studentRegister'%}" type="button" class="btn btn-outline-danger">Create new</a>
-                          </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+  <nav class="header-nav ms-auto">
+    <ul class="d-flex items-center space-x-4">
+      <li class="nav-item dropdown">
+        <a class="nav-link nav-profile d-flex items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <div class="relative">
+            <img src="{{ userDetails.studentPic.url }}" alt="Profile" class="rounded-full w-10 h-10 object-cover" style="border: 2px solid var(--primary-color);">
+            <div class="absolute bottom-0 right-0 w-3 h-3 bg-success rounded-full border-2" style="border-color: var(--card-bg);"></div>
           </div>
-        </section>
+          <span class="d-none d-md-block dropdown-toggle ps-2" style="color: var(--text-primary);">{{user.first_name}} {{user.last_name}}</span>
+        </a>
 
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header px-4 py-3">
+            <h6 style="color: var(--text-primary);">{{user.first_name}} {{user.last_name}}</h6>
+            <span style="color: var(--text-secondary);">Student</span>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+
+          <li>
+            <a class="dropdown-item d-flex items-center px-4 py-2" href="{% url 'studentProfile' %}">
+              <i class="bi bi-person me-2" style="color: var(--primary-color);"></i>
+              <span style="color: var(--text-primary);">My Profile</span>
+            </a>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+
+          {% if user.is_authenticated %}
+          <li>
+            <a class="dropdown-item d-flex items-center px-4 py-2" href="{% url 'studentLogout' %}">
+              <i class="bi bi-box-arrow-right me-2" style="color: var(--danger-color);"></i>
+              <span style="color: var(--text-primary);">Sign Out</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main" class="main px-lg-5 mx-lg-5 mt-5 pt-5" style="background-color: var(--bg-secondary);">
+  <div class="pagetitle mb-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 style="color: var(--text-primary);">Welcome back, {{user.first_name}}! 👋</h1>
+        <p style="color: var(--text-secondary);">Here's what's happening in your virtual classroom today.</p>
+      </div>
+      <div class="flex space-x-2">
+        <button class="btn" style="background-color: var(--primary-color); color: white;">
+          <i class="bi bi-calendar-check me-2"></i>
+          Schedule
+        </button>
+      </div>
     </div>
-  </main><!-- End #main -->
+  </div>
 
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+  <!-- Rest of the dashboard content with updated theme variables -->
+  <!-- ... existing content with updated color variables ... -->
+</main>
 
 {% endblock %}

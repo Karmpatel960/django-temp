@@ -10,9 +10,13 @@ done
 echo "Applying database migrations..."
 python manage.py migrate --noinput
 
+# Create necessary directories
+echo "Ensuring static directories exist..."
+mkdir -p /app/static /app/media
+
 # Collect static files
 echo "Collecting static files..."
-python manage.py collectstatic --noinput
+python manage.py collectstatic --noinput --clear
 
 # Create cache table
 echo "Creating cache table..."
