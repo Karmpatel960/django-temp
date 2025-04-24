@@ -125,3 +125,17 @@ class OfflineClass(models.Model):
 
     def __str__(self):
         return str(self.classId) if self.classId else ''
+
+# Table for storing study materials
+class Material(models.Model):
+    materialId = models.CharField(max_length=10, primary_key=True)
+    classId = models.ForeignKey(ClassRoom, on_delete=models.CASCADE)
+    materialHeading = models.CharField(max_length=100, null=False)
+    materialDescription = models.TextField(blank=False, null=False)
+    materialType = models.CharField(max_length=50, null=False)
+    materialLink = models.TextField(blank=True, null=True)
+    materialFile = models.FileField(upload_to='materials/', null=True, blank=True)
+    publishedTime = models.DateTimeField(default=datetime.now, null=True)
+
+    def __str__(self):
+        return str(self.materialId) if self.materialId else ''

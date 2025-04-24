@@ -1,548 +1,723 @@
-{% extends 'base.html' %}
-{% block title %}
-Admin Page
-{% endblock %}
-{% block content %}
 {% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en" class="light" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student Classroom for ATLAS Learning Management System">
+    <title>Classroom - ATLAS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1D4ED8',
+                        dark: '#111827'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
+    
+    <style>
+        :root {
+            --color-primary: #3B82F6;
+            --color-secondary: #1D4ED8;
+            --color-text: #111827;
+            --color-text-secondary: #4B5563;
+            --color-background: #F9FAFB;
+            --color-card: #FFFFFF;
+        }
+        
+        .dark {
+            --color-primary: #3B82F6;
+            --color-secondary: #60A5FA;
+            --color-text: #F9FAFB;
+            --color-text-secondary: #D1D5DB;
+            --color-background: #111827;
+            --color-card: #1F2937;
+        }
+        
+        body {
+            color: var(--color-text);
+            background-color: var(--color-background);
+            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .card {
+            background-color: var(--color-card);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .dark .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
 
-  <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center px-lg-5">
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <i class='bx bxs-graduation text-2xl text-primary'></i>
+                    <span class="font-bold text-xl text-dark dark:text-white">ATLAS</span>
+                </div>
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="{% url 'studentDashboard' %}" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class=" d-lg-block">VirtualClassroom</span>
-      </a>
-      <!-- <i class="bi bi-list toggle-sidebar-btn"></i> -->
-    </div><!-- End Logo -->
-
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <li class="nav-item d-block d-lg-none">
-          <a class="nav-link nav-icon search-bar-toggle " href="#">
-            <i class="bi bi-search"></i>
-          </a>
-        </li><!-- End Search Icon-->
-
-
-        <li class="nav-item dropdown pe-3">
-
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="{{ userDetails.studentPic.url }}" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">{{user.first_name}} {{user.last_name}}</span>
-          </a><!-- End Profile Iamge Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>{{user.first_name}} {{user.last_name}}</h6>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url 'studentProfile' %}">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            {% if user.is_authenticated %}
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url 'studentLogout' %}">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-            {% else %}
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="#">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-            {% endif %}
-
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav>
-
-  </header><!-- End Header -->
-
-
-  <main id="main" class="main px-md-5 mx-md-5" >
-
-    <div class="pagetitle px-xxl-2 px-lg-5">
-      <h1>Classroom</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'studentDashboard' %}">Home</a></li>
-          <li class="breadcrumb-item active">Dashboard</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-
-    <section class="section dashboard px-xxl-2 px-lg-0">
-
-
-      <div class="row d-flex">
-        <div class=" text-white col-lg-8 col-md-6  col-sm-12 h-100">
-          <div class="card info-card sales-card pb-0 h-100" style="">
-           <div class="row g-0" style="background: #4154f1; ">
-             <div class="col-md-3 align-self-center ">
-               <div class="card-icon rounded-circle d-flex align-items-center justify-content-center mx-auto" style="height: 6rem; width:6rem;">
-                 <i class="bi bi-easel" style="font-size: 3rem; color: #4154f1"></i>
-               </div>
-             </div>
-             <div class="col-md-9 bg-white pb-lg-5" style="height:272px;">
-               <div class="card-body mb-3 mt-4">
-                 <h5 class="card-title mb-0 pt-2 pb-0" style=" font-size:25px; text-transform:uppercase;">{{class.classname | truncatechars:20}}</h5>
-                 <h5 class="card-title mt-0 pt-1 py-1" ><b>CLASS CODE : </b>{{class.pk}}</h5>
-                 <h5 class="card-title pt-0 py-1" style="text-transform: uppercase;"><b>DEPARTMENT : </b><br>{{class.classDepartment | truncatechars:50}}</h5>
-                 <h5 class="card-title pt-0 py-1" style="text-transform: uppercase;"><b>ACADEMIC YEAR : </b>{{class.academicYear | truncatechars:15}}</h5>
-                 <h5 class="card-title pt-0 py-1" style="text-transform: uppercase;"><b>FACULTY NAME :</b> <br>{{class.classFacultyName | truncatechars:50}}</h5>
-                 <!-- <h1  style="color:red; text-transform: uppercase;">{{class.classname}}</h1>
-                 <p class="" style="color:black;">{{class.classDepartment}}</p>
-                 <p class="" style="color:black;">Class Code : <strong>{{class.classId}}</strong></p> -->
-               </div>
-             </div>
-           </div>
-         </div>
+                <!-- Nav -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="{% url 'studentDashboard' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                    <a href="{% url 'studentClasses' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">My Classes</a>
+                    <a href="{% url 'studentAssignment' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Assignments</a>
+                    <a href="#" class="px-3 py-2 rounded-md text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700">Classroom</a>
+                </nav>
+                
+                <!-- Right Section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                        <i id="sunIcon" class='bx bx-sun text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                        <i id="moonIcon" class='bx bx-moon text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative" id="profile-dropdown">
+                        <button onclick="toggleDropdown()" class="flex items-center space-x-2 focus:outline-none">
+                            <div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center">
+                                {% if userDetails.studentPic %}
+                                <img src="{{ userDetails.studentPic.url }}" alt="Profile" class="h-8 w-8 rounded-full object-cover">
+                                {% else %}
+                                <span class="text-sm font-medium">{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden md:block">{{ user.first_name }} {{ user.last_name }}</span>
+                            <i class='bx bx-chevron-down text-gray-500 dark:text-gray-400'></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10 hidden">
+                            <a href="{% url 'studentProfile' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-user mr-2'></i>My Profile
+                            </a>
+                            <a href="{% url 'studentProfile' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-cog mr-2'></i>Settings
+                            </a>
+                            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                            <a href="{% url 'studentLogout' %}" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-log-out mr-2'></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </header>
 
-        <!-- Time Table Details -->
-        <div class="col-lg-4 col-md-6 col-sm-12">
-          <div class="card mb-3 info-card sales-card pb-0">
-           <div class="row g-0" style="background: #4154f1">
-             <div class="col-sm-4 align-self-center ">
-               <div class="card-icon rounded-circle d-flex align-items-center justify-content-center mx-auto">
-                 <i class="bi bi-calendar-check" style="color: #4154f1"></i>
-               </div>
-             </div>
-             <div class="col-sm-8 bg-white">
-               <div class="card-body mt-0  pb-0">
-                 <h5 class="card-title text-center my-0 pt-3 ">TIME TABLE</h5>
-                 <div class="activity">
-                   <div class="mx-auto mt-0 ">
-                       <table class="table table-borderless ">
-                         <tbody>
-                             <tr >
-                               <td class="py-1" style="color: #012970"><strong>MONDAY</strong></td>
-                               {% if 'Monday' in timeTable %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; {{ timeTable|get_start_time:'Monday' }} - {{ timeTable|get_end_time:'Monday' }}</strong></td>
-                               {% else %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; ---</strong></td>
-                               {% endif %}
-                             </tr>
-                             <tr >
-                               <td class="py-1" style="color: #012970"><strong>TUESDAY</strong></td>
-                               {% if 'Tuesday' in timeTable %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; {{ timeTable|get_start_time:'Tuesday' }} - {{ timeTable|get_end_time:'Tuesday' }}</strong></td>
-                               {% else %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; ---</strong></td>
-                               {% endif %}
-                             </tr>
-
-                             <tr >
-                               <td class="py-1" style="color: #012970"><strong>WEDNESDAY</strong></td>
-                               {% if 'Wednesday' in timeTable %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; {{ timeTable|get_start_time:'Wednesday' }} - {{ timeTable|get_end_time:'Wednesday' }}</strong></td>
-                               {% else %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; ---</strong></td>
-                               {% endif %}
-                             </tr>
-
-                             <tr >
-                               <td class="py-1" style="color: #012970"><strong>THURSDAY</strong></td>
-                               {% if 'Thursday' in timeTable %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; {{ timeTable|get_start_time:'Thursday' }} - {{ timeTable|get_end_time:'Thursday' }}</strong></td>
-                               {% else %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; ---</strong></td>
-                               {% endif %}
-                             </tr>
-                             <tr >
-                               <td class="py-1" style="color: #012970"><strong>FRIDAY</strong></td>
-                               {% if 'Friday' in timeTable %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; {{ timeTable|get_start_time:'Friday' }} - {{ timeTable|get_end_time:'Friday' }}</strong></td>
-                               {% else %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; ---</strong></td>
-                               {% endif %}
-                             </tr>
-
-                             <tr>
-                               <td class="py-1" style="color:#012970"><strong>SATURDAY</strong></td>
-                               {% if 'Saturday' in timeTable %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; {{ timeTable|get_start_time:'Saturday' }} - {{ timeTable|get_end_time:'Saturday' }}</strong></td>
-                               {% else %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; ---</strong></td>
-                               {% endif %}
-                             </tr>
-                             <tr>
-                               <td class="py-1" style="color:#012970"><strong>SUNDAY </strong></td>
-                               {% if 'Sunday' in timeTable %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; {{ timeTable|get_start_time:'Sunday' }} - {{ timeTable|get_end_time:'Sunday' }}</strong></td>
-                               {% else %}
-                                <td class="py-1" style="color: #012970"><strong>: &nbsp; ---</strong></td>
-                               {% endif %}
-                             </tr>
-                         </tbody>
-                     </table>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
-        </div><!-- End Time Table Details -->
-
-      </div>
-
-
-
-
-
-      <div class="row">
-
-        <!-- Right side columns -->
-        <div class="col-lg-4">
-
-          <!-- Meeting Details -->
-          <div class="card mb-3 info-card sales-card pb-0">
-           <div class="row g-0" style="background: #4154f1">
-             <div class="col-md-4 align-self-center ">
-               <div class="card-icon rounded-circle d-flex align-items-center justify-content-center mx-auto">
-                 <i class="bi bi-camera-video" style=""></i>
-               </div>
-             </div>
-             <div class="col-md-8 bg-white">
-               <div class="card-body my-1">
-                 <h5 class="card-title text-center">MEET LINK</h5>
-                 <div class="activity text-center">
-                   {% if class.classLink %}
-                     <a type="button" href="{{class.classLink}}"  class="btn btn-primary col-sm-8" style="background: #4154f1" name="button">JOIN NOW</a>
-                   {% else %}
-                     <button type="button" class="btn btn-primary col-sm-8" style="background: #4154f1" name="button" disabled>JOIN NOW</button>
-                   {% endif %}
-
-                 </div>
-
-               </div>
-             </div>
-           </div>
-         </div><!-- End Meeting Details -->
-
-
-
-
-
-        <!-- Attendence Details -->
-        <div class="card mb-3 info-card sales-card pb-0">
-         <div class="row g-0" style="background: #4154f1">
-           <div class="col-sm-4 align-self-center ">
-             <div class="card-icon rounded-circle d-flex align-items-center justify-content-center mx-auto">
-               <i class="bi bi-clipboard-data" style=""></i>
-             </div>
-           </div>
-           <div class="col-sm-8 bg-white">
-             <div class="card-body mt-0  ">
-               <h5 class="card-title text-center mt-0 pt-3">ATTENDENCE</h5>
-               <div class="activity">
-                 <div class="mx-auto mt-0">
-                     <table class="table table-borderless ">
-                     <tbody>
-
-                         <tr >
-                           <td class="py-1" style="color: #012970"><strong>TOTAL CLASSES</strong></td>
-                           <td class="py-1" style="color: #012970"><strong>: &nbsp; {{totalConducted}}</strong></td>
-                         </tr>
-                         <tr >
-                           <td class="py-1" style="color: #012970"><strong>TOTAL ATTENDED</strong></td>
-                           <td class="py-1" style="color: #012970"><strong>: &nbsp; {{totalAttended}}</strong></td>
-                         </tr>
-                         <tr>
-                           <td class="py-1" style="color:#012970"><strong>TOTAL ABSENT</strong></td>
-                           <td class="py-1" style="color:#012970"><strong >: &nbsp; {{totalAbsent}}</strong></td>
-                         </tr>
-                         <tr>
-                           <td class="py-1" style="color:#012970"><strong>ATTENDENCE %</strong></td>
-                           <td class="py-1" style="color:#012970"><strong>: &nbsp; {{attendencePercent}}</strong></td>
-                         </tr>
-                     </tbody>
-                   </table>
-                 </div>
-
-               </div>
-
-             </div>
-           </div>
-         </div>
-       </div><!-- End Attendence Details -->
-
-
-           <!-- Meeting Details -->
-           <div class="card mb-3 info-card sales-card pb-0">
-            <div class="row g-0" style="background: #4154f1">
-              <div class="col-md-4 align-self-center ">
-                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center mx-auto">
-                  <i class="bi bi-columns-gap" style=""></i>
-                </div>
-              </div>
-              <div class="col-md-8 bg-white">
-                <div class="card-body my-1">
-                  <h5 class="card-title text-center mb-0">OFFLINE MODE ?</h5>
-                  <div class="activity ">
-                    {% if classOfflineStatus.offlineStatus == 'NO' %}
-                       <p><strong>Offline Mode : <span style="color:red;">NOT ACTIVE</span></strong></p>
-                    {% else %}
-                       <p class="my-1"><strong>Offline Mode : <span style="color:green;">ACTIVE</span></strong></p>
-                       <p class="my-1"><strong>Dose Required : {{classOfflineStatus.vaccineRequired}}</strong></p>
-                       <p class="my-1"><strong>Strength% Allowed : {{classOfflineStatus.classStrength}}</strong></p>
-                           {% if opted %}
-                                <p class="my-1"><strong>Opted For :<span style="color:green;"> OFFLINE </span></strong></p>
-                                <a type="button" class="btn btn-primary col-sm-12 bg-danger my-2" style="border:red;" data-bs-toggle="modal" data-bs-target="#optOnline">Opt Online Mode</a>
-                           {% else %}
-                                 {% if eligible == True %}
-                                      <p class="my-1"><strong>Eligibility : <span style="color:green;">ELIGIBLE</span>  </strong></p>
-                                      {% if available %}
-                                            <p class="my-1"><strong>Current Seat Availability : <span style="color:green;"> YES </span></strong></p>
-                                            <br>
-                                            <a type="button" class="btn btn-primary col-sm-12 bg-success my-2" style="border:green;" data-bs-toggle="modal" data-bs-target="#optOffline">Opt Offline Mode</a>
-                                      {% else %}
-                                          <p class="my-1"><strong>Current Seat Availability : <span style="color:red;"> NO </span> </strong></p>
-                                      {% endif %}
-                                 {% else %}
-                                      <p class="my-1"><strong>Eligibility : <span style="color:red;">NOT ELIGIBLE</span></strong></p>
-                                 {% endif %}
-                           {% endif %}
-
-                    {% endif %}
-
-                  </div>
-                </div>
-                <div class="mx-3">
-                  <p class="text-muted" style="text-align:justify;"><strong>Note: </strong>Please update your vaccination status in Edit Profile Section</p>
-                </div>
-              </div>
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Page Title -->
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-dark dark:text-white">{{ class.classname }}</h1>
+                <nav class="flex space-x-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    <a href="{% url 'studentDashboard' %}" class="hover:text-primary">Home</a>
+                    <span>/</span>
+                    <span class="text-primary">Classroom</span>
+                </nav>
             </div>
 
-            <!-- Modal for Meet Link -->
-            <form class="needs-validation" method='POST' novalidate  >
-              {% csrf_token %}
-              <div class="modal fade" id="optOffline" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">Opt Offline Mode</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <h4 class="card-title">Are you Sure want to Opt Offline Classes ?</h4>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">NO</button>
-                      <button type="submit" name="optOffline" class="btn btn-primary">YES</button>
-                    </div>
-                  </div>
+            {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700 dark:bg-green-800/20 dark:text-green-300{% elif message.tags == 'error' %}bg-red-100 text-red-700 dark:bg-red-800/20 dark:text-red-300{% else %}bg-blue-100 text-blue-700 dark:bg-blue-800/20 dark:text-blue-300{% endif %} rounded-lg">
+                    {{ message }}
                 </div>
-              </div>
-            </form><!-- End Modal-->
+                {% endfor %}
+            </div>
+            {% endif %}
 
-            <!-- Modal for Meet Link -->
-            <form class="needs-validation" method='POST' novalidate  >
-              {% csrf_token %}
-              <div class="modal fade" id="optOnline" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">Opt Online Mode</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <h4 class="card-title">Are you Sure want to Opt Online Classes ?</h4>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">NO</button>
-                      <button type="submit" name="optOnline" class="btn btn-primary">YES</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form><!-- End Modal-->
-
-
-          </div>
-
-        </div><!-- End Right side columns -->
-
-
-        <!-- Left side columns -->
-        <div class="col-lg-8">
-          <div class="row">
-
-          {% include 'partials/_alert.html' %}
-
-
-                {% if all_items_feed%}
-                  {% for item in all_items_feed %}
-                      {% if item.type == 'announcement' %}
-
-                          <!-- Meeting Details -->
-                        <div class="">
-                          <div class="card info-card sales-card pb-0">
-                           <div class="row g-0" style="background: #355C7D">
-                             <div class="col-sm-2 align-self-center ">
-                               <div class="card-icon rounded-circle d-flex align-items-center justify-content-center mx-auto bg-white">
-                                 <i class="bi bi-chat-right-text " style="color:#355C7D"></i>
-                               </div>
-                             </div>
-                             <div class="col-sm-10 bg-white" >
-                               <div class="card-body">
-                                 <div class="">
-                                   <div class="">
-                                     <h5 class="card-title">{{item.announcementHeading}}</h5>
-                                   </div>
-                                 </div>
-                                 {{item.announcementDescription}}
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                         </div><!-- End Meeting Details -->
-
-                      {% elif item.type == 'assignment' %}
-
-                      <div class="">
-                         <div class="card info-card sales-card  pb-0">
-                           <div class="row g-0" style="background: #99B898" >
-                             <div class="col-sm-2 align-self-center"  >
-                               <div class="card-icon rounded-circle d-flex align-items-center justify-content-center mx-auto" style="">
-                                 <i class="bi bi-pencil-square " style="color: #99B898"></i>
-                               </div>
-                             </div>
-                             <div class="col-sm-10 bg-white">
-                               <div class="card-body">
-                                 <div class="d-flex justify-content-between">
-                                   <div class="col-sm-9">
-                                     <h5 class="card-title">{{item.assignmentHeading}}</h5>
-                                   </div>
-                                   <div class="col-sm-3">
-                                     <h5 class="card-title" style="text-align:right;">Due: {{item.assignmentDueTime |date:"M d, Y" }}</h5>
-                                   </div>
-                                 </div>
-
-                                  <p>{{item.assignmentDescription}}</p>
-                                  {% if item.assignmentLink %}
-                                  <div class="d-flex justify-content-between">
-                                    <p><strong>Assignment Link : <a href="{{item.assignmentLink}}" target="_blank">Clicks Here</a></strong></p>
-                                    <div style="text-align:right;">
-                                      {% if user.username in item.assignmentSubmission %}
-                                        <button class="btn btn-success btn-sm" type="button" name="button"><span class="bi bi-check2-circle"> </span>Submitted</button>
-                                      {% else %}
-                                      <div class="">
-                                        <a href="#" data-bs-toggle="modal" data-bs-target="#{{item.assignmentId}}">
-                                          <button class="btn btn-primary btn-sm" type="button" name="button"><span class="bi bi-cloud-plus"> </span> Attach</button>
-                                        </a>
-                                      </div>
-                                      {% endif %}
-                                    </div>
-                                  </div>
-                                  {% else %}
-                                  <div style="text-align:right;">
-                                    {% if user.username in item.assignmentSubmission %}
-                                      <button class="btn btn-success btn-sm" type="button" name="button"><span class="bi bi-check2-circle"> </span>Submitted</button>
-                                    {% else %}
-                                    <div class="">
-                                      <a href="#" data-bs-toggle="modal" data-bs-target="#{{item.assignmentId}}">
-                                        <button class="btn btn-primary btn-sm" type="button" name="button"><span class="bi bi-cloud-plus"> </span> Attach</button>
-                                      </a>
-                                    </div>
-                                    {% endif %}
-                                  </div>
-                                  {% endif %}
-
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                      </div>
-
-                      <!-- Assignment Submission Modal-->
-                      <form class="needs-validation" method="POST" novalidate>
-                        {% csrf_token %}
-                        <div class="modal fade" id="{{item.assignmentId}}" tabindex="-1">
-                          <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <h5 class="modal-title">Assignment Submission</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-                              <div class="modal-body">
-                               <div class="col-12">
-                                 <label for="inputNanme4" class="form-label">Assignment Submission Link (Eg. Google Drive Link)</label>
-                                 <input type="url" class="form-control" name="assignmentLink" id="assignmentLink" required>
-                                 <div class="invalid-feedback">Please submit the assignment with valid URL</div>
-                                 <input type="text"  class="form-control"  name="assignmentId" value="{{item.assignmentId}}" hidden required>
-                               </div>
-                               <br>
-                            </div>
-                            <div class="modal-footer">
-                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                              <button type="submit" name="postSubmission" class="btn btn-primary">Submit</button>
-                            </div>
-                          </div>
+            <!-- Content Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Main Content (2 columns) -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Classroom Info Card -->
+                    <div class="card rounded-lg overflow-hidden shadow-lg">
+                        <div class="bg-primary py-3 px-4">
+                            <h2 class="text-lg font-semibold text-white text-center">CLASSROOM DETAILS</h2>
                         </div>
-                      </div>
-                    </form> <!-- End Assignment Submission Modal-->
+                        <div class="p-6 bg-white dark:bg-gray-800">
+                            <div class="flex items-center mb-4">
+                                <div class="rounded-full bg-primary/10 dark:bg-primary/20 p-3 mr-4">
+                                    <i class="bi bi-easel text-2xl text-primary"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-800 dark:text-white">{{class.classname}}</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <span class="font-bold text-primary">Class Code:</span> {{class.pk}}
+                                    </p>
+                                    <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <span class="font-bold text-primary">Department:</span> {{class.classDepartment}}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <span class="font-bold text-primary">Academic Year:</span> {{class.academicYear}}
+                                    </p>
+                                    <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        <span class="font-bold text-primary">Faculty:</span> {{class.classFacultyName}}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            {% if class.classLink %}
+                            <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <a href="{{class.classLink}}" target="_blank" class="inline-block w-full sm:w-auto px-4 py-2 bg-primary hover:bg-blue-700 text-white font-medium rounded transition-colors duration-200 text-center">
+                                    <i class="bi bi-camera-video mr-2"></i> Join Class Meeting
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
 
-                    {% endif %}
-              {% endfor %}
-              {% else %}
+                    <!-- Timetable Card -->
+                    <div class="card rounded-lg overflow-hidden shadow-lg">
+                        <div class="bg-primary py-3 px-4">
+                            <h2 class="text-lg font-semibold text-white text-center">TIME TABLE</h2>
+                        </div>
+                        <div class="p-4 bg-white dark:bg-gray-800">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
+                                        <tr>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Day</th>
+                                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">Monday</td>
+                                            {% if 'Monday' in timeTable %}
+                                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ timeTable|get_start_time:'Monday' }} - {{ timeTable|get_end_time:'Monday' }}</td>
+                                            {% else %}
+                                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">No class scheduled</td>
+                                            {% endif %}
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">Tuesday</td>
+                                            {% if 'Tuesday' in timeTable %}
+                                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ timeTable|get_start_time:'Tuesday' }} - {{ timeTable|get_end_time:'Tuesday' }}</td>
+                                            {% else %}
+                                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">No class scheduled</td>
+                                            {% endif %}
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">Wednesday</td>
+                                            {% if 'Wednesday' in timeTable %}
+                                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ timeTable|get_start_time:'Wednesday' }} - {{ timeTable|get_end_time:'Wednesday' }}</td>
+                                            {% else %}
+                                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">No class scheduled</td>
+                                            {% endif %}
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">Thursday</td>
+                                            {% if 'Thursday' in timeTable %}
+                                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ timeTable|get_start_time:'Thursday' }} - {{ timeTable|get_end_time:'Thursday' }}</td>
+                                            {% else %}
+                                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">No class scheduled</td>
+                                            {% endif %}
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">Friday</td>
+                                            {% if 'Friday' in timeTable %}
+                                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ timeTable|get_start_time:'Friday' }} - {{ timeTable|get_end_time:'Friday' }}</td>
+                                            {% else %}
+                                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">No class scheduled</td>
+                                            {% endif %}
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">Saturday</td>
+                                            {% if 'Saturday' in timeTable %}
+                                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ timeTable|get_start_time:'Saturday' }} - {{ timeTable|get_end_time:'Saturday' }}</td>
+                                            {% else %}
+                                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">No class scheduled</td>
+                                            {% endif %}
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">Sunday</td>
+                                            {% if 'Sunday' in timeTable %}
+                                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ timeTable|get_start_time:'Sunday' }} - {{ timeTable|get_end_time:'Sunday' }}</td>
+                                            {% else %}
+                                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">No class scheduled</td>
+                                            {% endif %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
-              <div class="">
-                <div class="card info-card sales-card pb-0 ">
-                 <div class="row g-0" style="background: #F52664">
-                   <div class="col-md-3 my-lg-4  pl-0  align-self-center ">
-                     <div class="card-icon rounded-circle d-flex align-items-center justify-content-center mx-auto">
-                       <i class="bi bi-exclamation-circle" style="color: #F52664"  ></i>
-                     </div>
-                   </div>
-                   <div class="col-md-9 py-lg-4 bg-white">
-                     <div class="card-body  mt-2 mb-0">
-                       <h5 class="card-title text-center ">Nothing To Display For Now!!</h5>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-              </div>
+                    <!-- Study Materials Table -->
+                    <div class="card rounded-lg overflow-hidden shadow-lg">
+                        <div class="bg-primary py-3 px-4">
+                            <h2 class="text-lg font-semibold text-white text-center">STUDY MATERIALS</h2>
+                        </div>
+                        <div class="p-4 bg-white dark:bg-gray-800">
+                            {% if materials %}
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                        <thead class="bg-gray-50 dark:bg-gray-700">
+                                            <tr>
+                                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Title</th>
+                                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                            {% for material in materials %}
+                                                <tr>
+                                                    <td class="px-4 py-4">
+                                                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ material.materialHeading }}</div>
+                                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ material.materialDescription|truncatechars:60 }}</div>
+                                                    </td>
+                                                    <td class="px-4 py-4">
+                                                        <span class="px-2 py-1 text-xs bg-primary text-white rounded-full">{{ material.materialType }}</span>
+                                                    </td>
+                                                    <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ material.publishedTime|date:"M d, Y" }}
+                                                    </td>
+                                                    <td class="px-4 py-4">
+                                                        <div class="flex flex-wrap gap-2">
+                                                            {% if material.materialLink %}
+                                                                <a href="{{ material.materialLink }}" target="_blank" class="px-3 py-1 border border-primary text-primary hover:bg-primary hover:text-white rounded text-xs inline-flex items-center transition-colors duration-200">
+                                                                    <i class="bi bi-link-45deg mr-1"></i> View
+                                                                </a>
+                                                            {% endif %}
+                                                            {% if material.materialFile %}
+                                                                <a href="{{ material.materialFile.url }}" target="_blank" class="px-3 py-1 border border-green-500 text-green-500 hover:bg-green-500 hover:text-white rounded text-xs inline-flex items-center transition-colors duration-200">
+                                                                    <i class="bi bi-download mr-1"></i> Download
+                                                                </a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-8">
+                                    <div class="text-gray-400 dark:text-gray-500 mb-3">
+                                        <i class="bi bi-book text-5xl"></i>
+                                    </div>
+                                    <p class="text-gray-500 dark:text-gray-400">No study materials have been shared yet</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Sidebar (1 column) -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Attendance Card -->
+                    <div class="card rounded-lg overflow-hidden shadow-lg">
+                        <div class="bg-primary py-3 px-4">
+                            <h2 class="text-lg font-semibold text-white text-center">ATTENDANCE</h2>
+                        </div>
+                        <div class="p-6 bg-white dark:bg-gray-800">
+                            <div class="flex items-center mb-4">
+                                <div class="rounded-full bg-primary/10 dark:bg-primary/20 p-3 mr-4">
+                                    <i class="bi bi-clipboard-data text-2xl text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Attendance Rate</h3>
+                                    <p class="text-2xl font-semibold text-dark dark:text-white">{{attendencePercent}}%</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mb-2">
+                                <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">Total Classes</div>
+                                    <div class="text-lg font-semibold text-gray-700 dark:text-gray-300">{{totalConducted}}</div>
+                                </div>
+                                <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">Attended</div>
+                                    <div class="text-lg font-semibold text-gray-700 dark:text-gray-300">{{totalAttended}}</div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded mb-4">
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Absences</div>
+                                <div class="text-lg font-semibold text-gray-700 dark:text-gray-300">{{totalAbsent}}</div>
+                            </div>
+                            
+                            <!-- Download Attendance Report -->
+                            <form method="POST" class="mt-4">
+                                {% csrf_token %}
+                                <button type="submit" name="downloadAttendance" class="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded transition-colors duration-200 flex items-center justify-center">
+                                    <i class="bi bi-download mr-2"></i> Download Attendance Report
+                                </button>
+                            </form>
+                        </div>
+                    </div>
 
-              {% endif %}
+                    <!-- Offline Mode Card -->
+                    <div class="card rounded-lg overflow-hidden shadow-lg">
+                        <div class="bg-primary py-3 px-4">
+                            <h2 class="text-lg font-semibold text-white text-center">OFFLINE MODE</h2>
+                        </div>
+                        <div class="p-6 bg-white dark:bg-gray-800">
+                            {% if classOfflineStatus.offlineStatus == 'NO' %}
+                                <div class="flex items-center mb-4">
+                                    <div class="rounded-full bg-red-100 dark:bg-red-900/20 p-3 mr-4">
+                                        <i class="bi bi-building text-2xl text-red-500"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-medium text-gray-800 dark:text-white">Not Active</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Offline mode is not available for this class</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="flex items-center mb-4">
+                                    <div class="rounded-full bg-green-100 dark:bg-green-900/20 p-3 mr-4">
+                                        <i class="bi bi-building text-2xl text-green-500"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-medium text-gray-800 dark:text-white">Active</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Offline mode is available</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">Dose Required</div>
+                                        <div class="text-lg font-semibold text-gray-700 dark:text-gray-300">{{classOfflineStatus.vaccineRequired}}</div>
+                                    </div>
+                                    <div class="bg-gray-50 dark:bg-gray-700 p-3 rounded">
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">Strength Allowed</div>
+                                        <div class="text-lg font-semibold text-gray-700 dark:text-gray-300">{{classOfflineStatus.classStrength}}%</div>
+                                    </div>
+                                </div>
+                                
+                                {% if opted %}
+                                    <div class="bg-green-100 dark:bg-green-900/20 p-4 rounded mb-4">
+                                        <p class="font-medium text-green-800 dark:text-green-200">You have opted for <span class="font-bold">OFFLINE</span> mode</p>
+                                    </div>
+                                    <button type="button" class="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded transition-colors duration-200" 
+                                        onclick="document.getElementById('optOnlineModal').classList.remove('hidden')">
+                                        Switch to Online Mode
+                                    </button>
+                                {% else %}
+                                    {% if eligible == True %}
+                                        <div class="bg-blue-100 dark:bg-blue-900/20 p-4 rounded mb-4">
+                                            <p class="font-medium text-blue-800 dark:text-blue-200">You are <span class="font-bold">ELIGIBLE</span> for offline mode</p>
+                                        </div>
+                                        {% if available %}
+                                            <div class="bg-green-100 dark:bg-green-900/20 p-4 rounded mb-4">
+                                                <p class="font-medium text-green-800 dark:text-green-200">Seats are currently <span class="font-bold">AVAILABLE</span></p>
+                                            </div>
+                                            <button type="button" class="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded transition-colors duration-200" 
+                                                onclick="document.getElementById('optOfflineModal').classList.remove('hidden')">
+                                                Opt for Offline Mode
+                                            </button>
+                                        {% else %}
+                                            <div class="bg-red-100 dark:bg-red-900/20 p-4 rounded">
+                                                <p class="font-medium text-red-800 dark:text-red-200">No seats are currently available</p>
+                                            </div>
+                                        {% endif %}
+                                    {% else %}
+                                        <div class="bg-red-100 dark:bg-red-900/20 p-4 rounded">
+                                            <p class="font-medium text-red-800 dark:text-red-200">You are <span class="font-bold">NOT ELIGIBLE</span> for offline mode</p>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+                            <div class="mt-4 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <strong>Note:</strong> Please update your vaccination status in Edit Profile Section
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
 
-          </div>
-        </div><!-- End Left side columns -->
+    <!-- ======= Footer ======= -->
+    <footer class="bg-gray-900 text-white py-6 mt-8">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <i class='bx bxs-graduation text-2xl text-primary mr-2'></i>
+                    <span class="text-xl font-bold">ATLAS</span>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400 text-sm">
+                        &copy; 2024 ATLAS. All rights reserved.
+                    </p>
+                    <p class="text-gray-500 text-xs mt-1">
+                        Developed by Karm and Harsh
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ======= Footer Ends ======= -->
 
+    <a href="#" class="fixed bottom-4 right-4 bg-primary hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-10 opacity-0">
+        <i class='bx bx-up-arrow-alt text-xl'></i>
+    </a>
 
+    <!-- Offline Mode Modals -->
+    <!-- Opt Offline Modal -->
+    <div id="optOfflineModal" class="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 hidden" aria-labelledby="optOfflineLabel">
+        <div class="relative p-4 w-full max-w-md mx-auto my-24">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+                <div class="bg-primary py-3 px-4 rounded-t-lg">
+                    <h5 class="text-lg font-semibold text-white text-center" id="optOfflineLabel">Opt for Offline Mode</h5>
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="rounded-full bg-green-100 dark:bg-green-900/20 p-3 mr-4">
+                                <i class="bi bi-building text-2xl text-green-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-800 dark:text-white">Confirm Offline Mode</h4>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 mb-2">Are you sure you want to opt for offline classes?</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded">
+                            By opting for offline mode, you agree to attend classes in person following all safety protocols.
+                        </p>
+                    </div>
+                    <div class="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded mr-2 transition-colors duration-200" 
+                            onclick="document.getElementById('optOfflineModal').classList.add('hidden')">
+                            Cancel
+                        </button>
+                        <button type="submit" name="optOffline" class="px-4 py-2 bg-primary hover:bg-blue-700 text-white font-medium rounded transition-colors duration-200">
+                            Confirm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-      </div>
-    </section>
+    <!-- Opt Online Modal -->
+    <div id="optOnlineModal" class="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 hidden" aria-labelledby="optOnlineLabel">
+        <div class="relative p-4 w-full max-w-md mx-auto my-24">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+                <div class="bg-primary py-3 px-4 rounded-t-lg">
+                    <h5 class="text-lg font-semibold text-white text-center" id="optOnlineLabel">Switch to Online Mode</h5>
+                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="rounded-full bg-blue-100 dark:bg-blue-900/20 p-3 mr-4">
+                                <i class="bi bi-laptop text-2xl text-blue-500"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-medium text-gray-800 dark:text-white">Confirm Online Mode</h4>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 mb-2">Are you sure you want to switch to online classes?</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded">
+                            This will give up your seat in offline classes. You may not be able to get back in if seats fill up.
+                        </p>
+                    </div>
+                    <div class="flex justify-end p-4 border-t border-gray-200 dark:border-gray-700">
+                        <button type="button" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded mr-2 transition-colors duration-200" 
+                            onclick="document.getElementById('optOnlineModal').classList.add('hidden')">
+                            Cancel
+                        </button>
+                        <button type="submit" name="optOnline" class="px-4 py-2 bg-primary hover:bg-blue-700 text-white font-medium rounded transition-colors duration-200">
+                            Confirm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-  </main><!-- End #main -->
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- ======= Footer ======= -->
-  {% include 'partials/_footer.html'%}
-  <!-- ======= Footer Ends ======= -->
+    <!-- Dropdown Script -->
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            if (!document.getElementById('profile-dropdown').contains(e.target)) {
+                document.getElementById('dropdown-menu').classList.add('hidden');
+            }
+        });
+    </script>
 
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme Toggle functionality
+        function setTheme() {
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Set initial theme based on saved preference or system preference
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            }
+        }
+        
+        // Set theme on initial load
+        setTheme();
+        
+        // Handle theme toggle button click
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            }
+        });
+        
+        // Listen for changes in system theme
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (!localStorage.getItem('theme')) {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                    document.getElementById('moonIcon').classList.remove('hidden');
+                    document.getElementById('sunIcon').classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.getElementById('sunIcon').classList.remove('hidden');
+                    document.getElementById('moonIcon').classList.add('hidden');
+                }
+            }
+        });
+    </script>
 
+    <!-- Custom Modal Scripts -->
+    <script>
+      // Initialize modal controls
+      document.addEventListener('DOMContentLoaded', function() {
+        // Handle all click events for closing modals
+        document.addEventListener('click', function(event) {
+          if (event.target.classList.contains('modal-overlay') || 
+              event.target.closest('[data-close-modal]')) {
+            
+            const modals = document.querySelectorAll('.fixed.inset-0.z-50');
+            modals.forEach(modal => {
+              modal.classList.add('hidden');
+            });
+          }
+        });
+        
+        // For each assignment modal toggle button
+        const assignmentButtons = document.querySelectorAll('[data-modal-target]');
+        assignmentButtons.forEach(button => {
+          button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-modal-target');
+            document.getElementById(targetId).classList.remove('hidden');
+          });
+        });
+        
+        // Form validation 
+        const forms = document.querySelectorAll('.needs-validation');
+        forms.forEach(form => {
+          form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+              event.preventDefault();
+              event.stopPropagation();
+              
+              // Show validation messages
+              const inputs = form.querySelectorAll('input[required], textarea[required]');
+              inputs.forEach(input => {
+                if (!input.validity.valid) {
+                  input.classList.add('border-red-500');
+                  const feedback = input.nextElementSibling;
+                  if (feedback && feedback.classList.contains('hidden')) {
+                    feedback.classList.remove('hidden');
+                  }
+                }
+              });
+            }
+            
+            form.classList.add('was-validated');
+          });
+        });
+      });
+    </script>
 
-
-{% endblock %}
+    <!-- Modal functionality -->
+    <script>
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            const modals = ['optOfflineModal', 'optOnlineModal'];
+            
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        });
+        
+        // Back to top functionality
+        const backToTopButton = document.querySelector('a[href="#"]');
+        if (backToTopButton) {
+            backToTopButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+            
+            // Show/hide button based on scroll position
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) {
+                    backToTopButton.classList.remove('opacity-0');
+                    backToTopButton.classList.add('opacity-100');
+                } else {
+                    backToTopButton.classList.remove('opacity-100');
+                    backToTopButton.classList.add('opacity-0');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

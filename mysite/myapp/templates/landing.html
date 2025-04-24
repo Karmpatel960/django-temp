@@ -4,426 +4,343 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- SEO Meta Tags -->
     <meta name="description" content="ATLAS: Virtual Classroom for Modern Education">
     <meta name="author" content="ATLAS Team">
-
-    <!-- OG Meta Tags to improve the way the post looks when you share the page on LinkedIn, Facebook, Google+ -->
-	<meta property="og:site_name" content="ATLAS" />
-	<meta property="og:site" content="" />
-	<meta property="og:title" content="ATLAS: Virtual Classroom"/>
-	<meta property="og:description" content="Connect, teach, and learn from anywhere with our integrated virtual classroom platform." />
-	<meta property="og:image" content="" />
-	<meta property="og:url" content="" />
-	<meta name="twitter:card" content="summary_large_image">
-
-    <!-- Webpage Title -->
     <title>Atlas | Home</title>
 
-    <!-- Styles -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="{% static 'landing/css/bootstrap.css' %}" rel="stylesheet">
-    <link href="{% static 'landing/css/fontawesome-all.css' %}" rel="stylesheet">
-    <link href="{% static  'landing/css/swiper.css' %}" rel="stylesheet">
-	<link href="{% static 'landing/css/magnific-popup.css' %}" rel="stylesheet">
-	<link href="{% static 'landing/css/styles.css' %}" rel="stylesheet">
-    <!-- Box icons -->
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-    <!-- Theme CSS -->
-    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4154f1',
+                        secondary: '#717ff5',
+                        dark: '#012970',
+                        light: '#f6f9ff'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
 
-	<!-- Favicon  -->
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Custom CSS -->
+    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
     <link rel="icon" href="{% static 'images/favicon.png' %}">
 
     <style>
-        /* Modern styling inspired by frontend */
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary));
-            color: var(--text-secondary);
-            transition: background 0.3s ease, color 0.3s ease;
+        /* Theme variables */
+        :root {
+            --primary-color: #4154f1;
+            --secondary-color: #717ff5;
+            --text-primary: #012970;
+            --text-secondary: #444444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f9ff;
+            --card-bg: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
         }
         
-        /* Force dark mode text colors */
-        html[data-theme="dark"] .h1-large {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
+        [data-theme="dark"] {
+            --primary-color: #4154f1;
+            --secondary-color: #717ff5;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --card-bg: #374151;
+            --shadow-color: rgba(0, 0, 0, 0.25);
         }
         
-        html[data-theme="dark"] .p-large {
-            color: #e0e0e0 !important;
-            -webkit-text-fill-color: #e0e0e0 !important;
-        }
-        
-        html[data-theme="light"] .h1-large {
-            color: #012970 !important;
-            -webkit-text-fill-color: #012970 !important;
-        }
-        
-        html[data-theme="light"] .p-large {
-            color: #444444 !important;
-            -webkit-text-fill-color: #444444 !important;
-        }
-        
-        /* Logo styling */
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo-icon {
-            font-size: 2rem;
-            color: var(--primary-color);
-            transition: color 0.3s ease;
-        }
-        
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--logo-text);
-            transition: color 0.3s ease;
-        }
-        
-        /* Navbar styling */
-        .navbar {
-            backdrop-filter: blur(10px);
-            background-color: var(--nav-bg);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .nav-link {
-            font-weight: 500;
-            position: relative;
-            color: var(--nav-text) !important;
-            opacity: 0.8;
-            transition: opacity 0.3s ease, color 0.3s ease;
-        }
-        
-        .nav-link:hover {
-            color: var(--nav-text) !important;
-            opacity: 1;
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -2px;
-            left: 0;
-            background-color: var(--primary-color);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
-        /* Header styling */
-        .header {
-            padding-top: 120px;
-            padding-bottom: 80px;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-            overflow: hidden;
-            position: relative;
-            transition: background 0.3s ease;
-        }
-        
-        .h1-large {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
+        .dark [data-theme="dark"] .dark\:text-white {
             color: var(--text-primary);
-            transition: color 0.3s ease;
         }
         
-        .p-large {
-            font-size: 1.125rem;
-            line-height: 1.6;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-            transition: color 0.3s ease;
-        }
-        
-        /* Button styling */
-        .btn-solid-lg {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            border: none;
-            box-shadow: 0 4px 6px var(--shadow-color);
-        }
-        
-        .btn-solid-lg:first-of-type {
-            background-color: var(--primary-color);
-            color: white;
-        }
-        
-        .btn-solid-lg:first-of-type:hover {
-            background-color: var(--primary-color-hover);
-            transform: translateY(-3px);
-        }
-        
-        .btn-solid-lg:last-of-type {
+        .dark [data-theme="dark"] .dark\:bg-gray-800 {
             background-color: var(--card-bg);
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-        }
-        
-        .btn-solid-lg:last-of-type:hover {
-            background-color: rgba(65, 84, 241, 0.05);
-            transform: translateY(-3px);
-        }
-        
-        /* Image container */
-        .image-container {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .image-container img {
-            border-radius: 12px;
-            box-shadow: 0 15px 30px var(--shadow-color);
-            transition: all 0.5s ease, box-shadow 0.3s ease;
-        }
-        
-        .image-container:hover img {
-            transform: translateY(-5px);
-        }
-        
-        /* Wave animation */
-        .ocean {
-            height: 80px;
-            width: 100%;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            overflow: hidden;
-        }
-        
-        .wave {
-            background: url("{% static 'images/wave.svg' %}");
-            background-size: 1000px 100px;
-            position: absolute;
-            width: 6400px;
-            height: 100px;
-            animation: wave 7s cubic-bezier( 0.36, 0.45, 0.63, 0.53) infinite;
-            transform: translate3d(0, 0, 0);
-            opacity: 0.2;
-        }
-        
-        .wave:nth-of-type(2) {
-            animation: wave 7s cubic-bezier( 0.36, 0.45, 0.63, 0.53) -.125s infinite, swell 7s ease -1.25s infinite;
-            opacity: 0.1;
-        }
-        
-        @keyframes wave {
-            0% {transform: translateX(0);}
-            50% {transform: translateX(-50%);}
-            100% {transform: translateX(-100%);}
-        }
-        
-        /* Footer styling */
-        .footer {
-            background-color: var(--footer-bg);
-            padding: 40px 0;
-            color: var(--text-secondary);
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        
-        .footer .logo-text {
-            color: var(--text-primary);
-            transition: color 0.3s ease;
-        }
-        
-        /* Text colors */
-        .text-muted {
-            color: var(--text-muted) !important;
-            transition: color 0.3s ease;
-        }
-        
-        .text-primary {
-            color: var(--primary-color) !important;
-        }
-        
-        .social-container a {
-            transition: all 0.3s ease;
-        }
-        
-        .social-container a:hover {
-            transform: translateY(-5px);
-        }
-        
-        .social-container .fa-circle {
-            color: var(--primary-color);
-            transition: color 0.3s ease;
-        }
-        
-        .social-container .fa-stack-1x {
-            color: white;
-        }
-        
-        /* Responsive tweaks */
-        @media (min-width: 1200px) {
-        .header .image-container img {
-                max-width: 100%;
-                position: relative;
-            }
-            
-            .h1-large {
-                font-size: 3rem;
-            }
-        }
-        
-        @media (max-width: 991px) {
-            .header {
-                padding-top: 100px;
-                padding-bottom: 60px;
-        }
     }
     </style>
-
 </head>
-<body data-spy="scroll" data-target=".fixed-top">
 
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg fixed-top navbar-dark">
-        <div class="container">
-
-            <!-- Image Logo -->
-            <a class="navbar-brand logo-image" href="" style="text-decoration:none;">
-              <div class="logo-container">
-                <i class='bx bxs-graduation logo-icon'></i>
-                <span class="logo-text">ATLAS</span>
-              </div>
-            </a>
-
-            <button class="navbar-toggler p-0 border-0" type="button" data-toggle="offcanvas">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
-                <ul class="navbar-nav ml-auto">
-                  <li class="nav-item">
-                      <a class="nav-link page-scroll" href="#features">Features</a>
-                  </li>
-                  <li class="nav-item">
-                      <a class="nav-link page-scroll" href="#about">About</a>
-                  </li>
-                  <li class="nav-item">
-                      <a class="nav-link page-scroll"  href="https://docs.google.com/document/d/1FDN6XB1q-P11hP1Q8LjQqy8A0GC2axnT/edit?usp=sharing&ouid=111166077581430147505&rtpof=true&sd=true" target="_blank">Documentation</a>
-                  </li>
-                   <li class="nav-item">
-                        <a class="nav-link page-scroll" href="#contact">Connect</a>
-                    </li>
-                  <li class="nav-item theme-switch-wrapper">
-                      <label class="theme-switch" for="theme-toggle">
-                          <input type="checkbox" id="theme-toggle" />
-                          <div class="slider">
-                              <i class='bx bxs-sun'></i>
-                              <i class='bx bxs-moon'></i>
-                          </div>
-                      </label>
-                  </li>
-                </ul>
-            </div> <!-- end of navbar-collapse -->
-        </div> <!-- end of container -->
-    </nav> <!-- end of navbar -->
-    <!-- end of navigation -->
-
-
+<body class="font-['Inter'] bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
     <!-- Header -->
-    <div class="header">
-        <div class="ocean">
-            <div class="wave"></div>
-            <div class="wave"></div>
+    <header class="fixed w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="{% url 'landing' %}" class="flex items-center space-x-3">
+                    <i class='bx bxs-graduation text-3xl text-primary'></i>
+                    <span class="text-2xl font-bold text-dark dark:text-white">ATLAS</span>
+                </a>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-600 dark:text-gray-300 hover:text-primary transition">Features</a>
+                    <a href="#integrations" class="text-gray-600 dark:text-gray-300 hover:text-primary transition">Integrations</a>
+                    <a href="#testimonials" class="text-gray-600 dark:text-gray-300 hover:text-primary transition">Testimonials</a>
+                    <a href="#contact" class="text-gray-600 dark:text-gray-300 hover:text-primary transition">Contact</a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
+                        <i class='bx bx-moon text-xl dark:text-white'></i>
+            </button>
+                    <a href="{% url 'studentLogin' %}" class="px-4 py-2 text-primary hover:bg-primary/10 rounded-lg transition">Student Login</a>
+                    <a href="{% url 'facultyLogin' %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition">Faculty Login</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-6">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-12 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold text-dark dark:text-white mb-6">
+                        Virtual Classroom for Modern Education
+                    </h1>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                        Connect, teach, and learn from anywhere with our integrated virtual classroom platform.
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <a href="{% url 'studentRegister' %}" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition text-center">
+                            Get Started as Student
+                        </a>
+                        <a href="{% url 'facultyRegister' %}" class="px-6 py-3 border border-primary text-primary rounded-lg hover:bg-primary/10 transition text-center">
+                            Join as Faculty
+                        </a>
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <img src="https://atlasstoreage.s3.ap-south-1.amazonaws.com/poster.svg" alt="Virtual Classroom" class="rounded-lg shadow-xl">
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6 col-xl-6 mb-5 mb-lg-0">
-                    <div class="text-container mt-0">
-                        <h1 class="h1-large" style="color: var(--text-primary) !important; -webkit-text-fill-color: var(--text-primary);">ATLAS: Virtual Classroom for Modern Education</h1>
-                        <p class="p-large">Connect, teach, and learn from anywhere with our integrated virtual classroom platform. Seamlessly works with Google Classroom, Meet, and Microsoft Teams.</p>
-                        
-                        <div class="mb-4">
-                            <a href="{% url 'facultyLogin' %}" class="btn-solid-lg mr-3" name="login"><b>FACULTY LOGIN</b></a>
-                            <a href="{% url 'studentLogin' %}" class="btn-solid-lg" name="register"><b>STUDENT LOGIN</b></a>
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-dark dark:text-white mb-4">Key Features</h2>
+                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Everything you need to create an engaging virtual learning environment
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                        <i class='bx bx-video-recording text-2xl text-primary'></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark dark:text-white mb-2">Live Sessions</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Create interactive virtual classroom sessions with video and screen sharing.
+                    </p>
+                          </div>
+                
+                <!-- Feature 2 -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                        <i class='bx bx-task text-2xl text-primary'></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark dark:text-white mb-2">Assignment Management</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Distribute, collect, and grade assignments all within one platform.
+                    </p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                        <i class='bx bx-stats text-2xl text-primary'></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark dark:text-white mb-2">Attendance Tracking</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Automatically track student attendance and participation in virtual sessions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations Section -->
+    <section id="integrations" class="py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-dark dark:text-white mb-4">Seamless Integrations</h2>
+                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Works with your favorite tools and platforms
+                </p>
+            </div>
+            <div class="flex flex-wrap justify-center items-center gap-8">
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                    <img src="https://placehold.co/200x60/3B82F6/FFFFFF?text=Google+Classroom" alt="Google Classroom" class="h-12 w-auto opacity-80 hover:opacity-100 transition">
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                    <img src="https://placehold.co/200x60/3B82F6/FFFFFF?text=Microsoft+Teams" alt="Microsoft Teams" class="h-12 w-auto opacity-80 hover:opacity-100 transition">
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                    <img src="https://placehold.co/200x60/3B82F6/FFFFFF?text=Google+Meet" alt="Google Meet" class="h-12 w-auto opacity-80 hover:opacity-100 transition">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-dark dark:text-white mb-4">What Our Users Say</h2>
+                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Hear from educators and students who use ATLAS
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mr-4">
+                            <img src="https://placehold.co/100x100/3B82F6/FFFFFF?text=JS" alt="User" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-dark dark:text-white">Dr. Jane Smith</h4>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">Professor of Computer Science</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        "ATLAS has transformed how I teach my courses. The seamless integration with other tools makes managing virtual classes effortless."
+                    </p>
                         </div>
                         
-                        <div class="d-flex flex-wrap">
-                            <div class="d-flex align-items-center mr-4 mb-2">
-                                <i class='bx bx-check text-primary mr-2'></i>
-                                <span class="text-muted">No credit card required</span>
+                <!-- Testimonial 2 -->
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mr-4">
+                            <img src="https://placehold.co/100x100/3B82F6/FFFFFF?text=MR" alt="User" class="w-full h-full object-cover">
                             </div>
-                            <div class="d-flex align-items-center mb-2">
-                                <i class='bx bx-check text-primary mr-2'></i>
-                                <span class="text-muted">Free for educational institutions</span>
-                            </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-dark dark:text-white">Michael Rodriguez</h4>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">Engineering Student</p>
                         </div>
-                    </div> <!-- end of text-container -->
-                </div> <!-- end of col -->
-                <div class="col-lg-6 col-xl-6">
-                    <div class="image-container">
-                        <img class="img-fluid" src="{% static 'images/header-illustration.svg' %}" alt="Virtual classroom interface">
-                    </div> <!-- end of image-container -->
-                </div> <!-- end of col -->
-            </div> <!-- end of row -->
-        </div> <!-- end of container -->
-    </div> <!-- end of header -->
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        "As a student, ATLAS helps me stay organized with all my assignments and attend virtual lectures without any technical issues."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-
+    <!-- CTA Section -->
+    <section class="py-20 bg-primary">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold text-white mb-6">Ready to Transform Your Classroom?</h2>
+            <p class="text-white/80 mb-8 max-w-2xl mx-auto">
+                Join thousands of educators and students who are already using ATLAS
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <a href="{% url 'studentRegister' %}" class="px-6 py-3 bg-white text-primary rounded-lg hover:bg-gray-100 transition">
+                    Get Started as Student
+                </a>
+                <a href="{% url 'facultyRegister' %}" class="px-6 py-3 border border-white text-white rounded-lg hover:bg-white/10 transition">
+                    Join as Faculty
+                </a>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
-    <div class="footer" id="contact">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12 text-center">
-                  <div class="logo-container justify-content-center mb-3">
-                    <i class='bx bxs-graduation logo-icon'></i>
-                    <span class="logo-text">ATLAS</span>
+    <footer id="contact" class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i class='bx bxs-graduation text-3xl text-primary'></i>
+                        <span class="text-2xl font-bold">ATLAS</span>
+                    </div>
+                    <p class="text-gray-400">
+                        Transforming education through virtual classrooms
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#features" class="text-gray-400 hover:text-white transition">Features</a></li>
+                        <li><a href="#integrations" class="text-gray-400 hover:text-white transition">Integrations</a></li>
+                        <li><a href="#testimonials" class="text-gray-400 hover:text-white transition">Testimonials</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center text-gray-400"><i class='bx bx-envelope mr-2'></i> contact@atlas-edu.com</li>
+                        <li class="flex items-center text-gray-400"><i class='bx bx-phone mr-2'></i> +1 (123) 456-7890</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 ATLAS. All rights reserved.</p>
+            </div>
                   </div>
-                  <p class="mb-4">Connect, teach, and learn from anywhere</p>
-                  <div class="social-container mb-4">
-                        <span class="fa-stack mx-1">
-                            <a href="#" target="_blank">
-                                <i class="fas fa-circle fa-stack-2x"></i>
-                                <i class="fab fa-linkedin fa-stack-1x"></i>
-                            </a>
-                        </span>
-                        <span class="fa-stack mx-1">
-                            <a href="#" target="_blank">
-                                <i class="fas fa-circle fa-stack-2x"></i>
-                                <i class="fab fa-facebook fa-stack-1x"></i>
-                            </a>
-                        </span>
-                        <span class="fa-stack mx-1">
-                            <a href="#" target="_blank">
-                                <i class="fas fa-circle fa-stack-2x"></i>
-                                <i class="fab fa-twitter fa-stack-1x"></i>
-                            </a>
-                        </span>
-                    </div> <!-- end of social-container -->
-                    <p class="text-muted small">© 2023 ATLAS. All rights reserved.</p>
-                </div> <!-- end of col -->
-            </div> <!-- end of row -->
-        </div> <!-- end of container -->
-    </div> <!-- end of footer -->
-    <!-- end of footer -->
+    </footer>
 
-    <!-- Scripts -->
-    <script src="{% static 'landing/js/jquery.min.js' %}"></script> <!-- jQuery for Bootstrap's JavaScript plugins -->
-    <script src="{% static 'landing/js/bootstrap.min.js' %}"></script> <!-- Bootstrap framework -->
-    <script src="{% static 'landing/js/jquery.easing.min.js' %}"></script> <!-- jQuery Easing for smooth scrolling between anchors -->
-    <script src="{% static 'landing/js/swiper.min.js' %}"></script> <!-- Swiper for image and text sliders -->
-    <script src="{% static 'landing/js/jquery.magnific-popup.js' %}"></script> <!-- Magnific Popup for lightboxes -->
-    <script src="{% static 'landing/js/scripts.js' %}"></script> <!-- Custom scripts -->
-    <!-- Theme toggle script -->
-    <script src="{% static 'js/dark-theme.js' %}"></script>
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleIcon = themeToggleBtn.querySelector('i');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-theme', savedTheme);
+                htmlElement.classList.toggle('dark', savedTheme === 'dark');
+                updateIcon(savedTheme === 'dark');
+            } else {
+                // Check if user prefers dark mode
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                htmlElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                htmlElement.classList.toggle('dark', prefersDark);
+                updateIcon(prefersDark);
+            }
+            
+            // Toggle theme on button click
+            themeToggleBtn.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                htmlElement.setAttribute('data-theme', newTheme);
+                htmlElement.classList.toggle('dark');
+                localStorage.setItem('theme', newTheme);
+                
+                updateIcon(newTheme === 'dark');
+            });
+            
+            // Update icon based on current theme
+            function updateIcon(isDark) {
+                if (isDark) {
+                    themeToggleIcon.classList.remove('bx-moon');
+                    themeToggleIcon.classList.add('bx-sun');
+                } else {
+                    themeToggleIcon.classList.remove('bx-sun');
+                    themeToggleIcon.classList.add('bx-moon');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

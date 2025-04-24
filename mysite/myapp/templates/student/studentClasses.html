@@ -1,0 +1,399 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en" class="light" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student Classes for ATLAS Learning Management System">
+    <title>My Classes - ATLAS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1D4ED8',
+                        dark: '#111827'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
+    
+    <style>
+        :root {
+            --color-primary: #3B82F6;
+            --color-secondary: #1D4ED8;
+            --color-text: #111827;
+            --color-text-secondary: #4B5563;
+            --color-background: #F9FAFB;
+            --color-card: #FFFFFF;
+        }
+        
+        .dark {
+            --color-primary: #3B82F6;
+            --color-secondary: #60A5FA;
+            --color-text: #F9FAFB;
+            --color-text-secondary: #D1D5DB;
+            --color-background: #111827;
+            --color-card: #1F2937;
+        }
+        
+        body {
+            color: var(--color-text);
+            background-color: var(--color-background);
+            transition: background-color 0.3s, color 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .card {
+            background-color: var(--color-card);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .dark .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <i class='bx bxs-graduation text-2xl text-primary'></i>
+                    <span class="font-bold text-xl text-dark dark:text-white">ATLAS</span>
+                </div>
+                
+                <!-- Nav -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="{% url 'studentDashboard' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                    <a href="{% url 'studentClasses' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700">My Classes</a>
+                    <a href="{% url 'studentAssignment' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Assignments</a>
+                </nav>
+                
+                <!-- Right Section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                        <i id="sunIcon" class='bx bx-sun text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                        <i id="moonIcon" class='bx bx-moon text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative" id="profile-dropdown">
+                        <button onclick="toggleDropdown()" class="flex items-center space-x-2 focus:outline-none">
+                            <div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center">
+                                {% if userDetails.studentPic %}
+                                <img src="{{ userDetails.studentPic.url }}" alt="Profile" class="h-8 w-8 rounded-full object-cover">
+                                {% else %}
+                                <span class="text-sm font-medium">{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden md:block">{{ request.user.first_name }} {{ request.user.last_name }}</span>
+                            <i class='bx bx-chevron-down text-gray-500 dark:text-gray-400'></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10 hidden">
+                            <a href="{% url 'studentProfile' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-user mr-2'></i>My Profile
+                            </a>
+                            <a href="{% url 'studentProfile' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-cog mr-2'></i>Settings
+                            </a>
+                            <div class="border-t border-gray-200 dark:border-gray-700"></div>
+                            <a href="{% url 'studentLogout' %}" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-log-out mr-2'></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Page Title -->
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-dark dark:text-white">My Classes</h1>
+                <nav class="flex space-x-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    <a href="{% url 'studentDashboard' %}" class="hover:text-primary">Home</a>
+                    <span>/</span>
+                    <span class="text-primary">My Classes</span>
+                </nav>
+            </div>
+
+            {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700 dark:bg-green-800/20 dark:text-green-300{% elif message.tags == 'error' %}bg-red-100 text-red-700 dark:bg-red-800/20 dark:text-red-300{% else %}bg-blue-100 text-blue-700 dark:bg-blue-800/20 dark:text-blue-300{% endif %} rounded-lg">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Classes Layout -->
+            <div class="card rounded-lg overflow-hidden">
+                <div class="bg-primary py-3 px-4 rounded-t-lg">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-white">Enrolled Classes</h2>
+                        <button data-toggle="modal" class="px-3 py-1.5 bg-white hover:bg-gray-100 text-primary text-sm font-medium rounded-md transition-colors duration-200 flex items-center">
+                            <i class='bx bx-plus mr-1'></i> Join Class
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    {% if all_courses %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {% for course in all_courses %}
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex items-start mb-4">
+                                        <div class="rounded-full bg-primary/10 dark:bg-primary/20 p-3 mr-4">
+                                            <i class='bx bx-book text-2xl text-primary'></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium text-dark dark:text-white flex items-center text-lg">
+                                                {{ course.classRoom.classname }}
+                                                {% if course.classRoom.classLink %}
+                                                <span class="ml-2 px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs rounded-full">Live</span>
+                                                {% endif %}
+                                            </h3>
+                                            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1 space-y-1">
+                                                <p class="flex items-center">
+                                                    <i class='bx bx-buildings mr-1'></i> {{ course.classRoom.classDepartment }}
+                                                </p>
+                                                <p class="flex items-center">
+                                                    <i class='bx bx-user mr-1'></i> {{ course.classRoom.classFacultyName }}
+                                                </p>
+                                                <p class="flex items-center">
+                                                    <i class='bx bx-id-card mr-1'></i> {{ course.classRoom.classId }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-auto pt-4 flex flex-col sm:flex-row gap-2">
+                                        <a href="{% url 'studentSubject' pk=course.classRoom.classId %}" class="px-4 py-2 text-sm border border-primary text-primary hover:bg-primary hover:text-white rounded flex items-center justify-center transition-colors duration-200">
+                                            <i class='bx bx-show mr-1'></i> View Class
+                                        </a>
+                                        {% if course.classRoom.classLink %}
+                                        <a href="{{ course.classRoom.classLink }}" target="_blank" class="px-4 py-2 text-sm bg-primary hover:bg-blue-700 text-white rounded flex items-center justify-center transition-colors duration-200">
+                                            <i class='bx bx-video mr-1'></i> Join Meeting
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-8">
+                            <div class="text-gray-400 dark:text-gray-500 mb-3">
+                                <i class='bx bx-book-alt text-5xl'></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-dark dark:text-white mb-2">No classes enrolled yet</h3>
+                            <p class="text-gray-500 dark:text-gray-400 mb-4">Join a class to get started with your learning journey</p>
+                            <button data-toggle="modal" class="px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg transition duration-300">
+                                <i class='bx bx-plus mr-1'></i> Join a Class
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ======= Footer ======= -->
+    <footer class="bg-gray-900 text-white py-6 mt-8">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row items-center justify-between">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <i class='bx bxs-graduation text-2xl text-primary mr-2'></i>
+                    <span class="text-xl font-bold">ATLAS</span>
+                </div>
+                <div class="text-center md:text-right">
+                    <p class="text-gray-400 text-sm">
+                        &copy; 2024 ATLAS. All rights reserved.
+                    </p>
+                    <p class="text-gray-500 text-xs mt-1">
+                        Developed by Karm and Harsh
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- ======= Footer Ends ======= -->
+
+    <!-- Join Class Modal -->
+    <div class="fixed inset-0 hidden items-center justify-center z-50 bg-black bg-opacity-50" id="joinClassModal">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="bg-primary py-3 px-4 rounded-t-lg">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-medium text-white">Join a Class</h3>
+                    <button type="button" class="close-modal text-white hover:text-gray-200 focus:outline-none">
+                        <i class='bx bx-x text-2xl'></i>
+                    </button>
+                </div>
+            </div>
+            <form action="{% url 'studentDashboard' %}" method="post" class="p-6">
+                {% csrf_token %}
+                <div class="mb-6">
+                    <div class="flex items-center mb-4">
+                        <div class="rounded-full bg-primary/10 dark:bg-primary/20 p-3 mr-4">
+                            <i class='bx bx-book-alt text-2xl text-primary'></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-800 dark:text-white">Join New Class</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Enter the class code to enroll</p>
+                        </div>
+                    </div>
+                    
+                    <label for="classJoinCode" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Class Code</label>
+                    <input type="text" name="classJoinCode" id="classJoinCode" required 
+                           placeholder="Enter class code (e.g., Gh8N3dnx)" 
+                           class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-3 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <i class='bx bx-info-circle mr-1'></i> This code is provided by your instructor
+                    </p>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" class="close-modal px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none transition">
+                        Cancel
+                    </button>
+                    <button type="submit" name="classJoin" class="px-4 py-2 bg-primary hover:bg-blue-700 text-white rounded-lg transition duration-300 focus:outline-none">
+                        Join Class
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dropdown Script -->
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            if (!document.getElementById('profile-dropdown').contains(e.target)) {
+                document.getElementById('dropdown-menu').classList.add('hidden');
+            }
+        });
+    </script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme Toggle functionality
+        function setTheme() {
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Set initial theme based on saved preference or system preference
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            }
+        }
+        
+        // Set theme on initial load
+        setTheme();
+        
+        // Handle theme toggle button click
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            }
+        });
+        
+        // Listen for changes in system theme
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (!localStorage.getItem('theme')) {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                    document.getElementById('moonIcon').classList.remove('hidden');
+                    document.getElementById('sunIcon').classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.getElementById('sunIcon').classList.remove('hidden');
+                    document.getElementById('moonIcon').classList.add('hidden');
+                }
+            }
+        });
+    </script>
+
+    <!-- Modal Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Open modal
+            const modalToggle = document.querySelector('[data-toggle="modal"]');
+            const modal = document.getElementById('joinClassModal');
+            
+            if (modalToggle && modal) {
+                modalToggle.addEventListener('click', function() {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    document.body.classList.add('overflow-hidden');
+                });
+                
+                // Close modal
+                const closeButtons = modal.querySelectorAll('.close-modal');
+                closeButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        document.body.classList.remove('overflow-hidden');
+                    });
+                });
+                
+                // Close on outside click
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        document.body.classList.remove('overflow-hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

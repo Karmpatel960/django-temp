@@ -1,0 +1,425 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="ATLAS: Virtual Classroom for Modern Education">
+    <meta name="author" content="ATLAS Team">
+    <title>Meetings - ATLAS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1D4ED8',
+                        dark: '#111827',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --color-primary: #3B82F6;
+            --color-secondary: #1D4ED8;
+            --color-text: #111827;
+            --color-text-secondary: #4B5563;
+            --color-background: #F9FAFB;
+            --color-card: #FFFFFF;
+        }
+        
+        .dark {
+            --color-primary: #3B82F6;
+            --color-secondary: #60A5FA;
+            --color-text: #F9FAFB;
+            --color-text-secondary: #D1D5DB;
+            --color-background: #111827;
+            --color-card: #1F2937;
+        }
+        
+        body {
+            color: var(--color-text);
+            background-color: var(--color-background);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .card {
+            background-color: var(--color-card);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .dark .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <i class='bx bxs-graduation text-2xl text-primary'></i>
+                    <span class="font-bold text-xl text-dark dark:text-white">ATLAS</span>
+                </div>
+                
+                <!-- Nav -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="{% url 'facultyDashboard' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                    <a href="{% url 'facultySubject' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Classroom</a>
+                    <a href="{% url 'facultyAttendencePage' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Attendance</a>
+                    <a href="{% url 'facultyAssignment' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Assignments</a>
+                    <a href="{% url 'facultyMaterial' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Materials</a>
+                    <a href="{% url 'facultyMeeting' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700">Meetings</a>
+                </nav>
+                
+                <!-- Right Section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                        <i id="sunIcon" class='bx bx-sun text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                        <i id="moonIcon" class='bx bx-moon text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative" id="profile-dropdown">
+                        <button onclick="toggleDropdown()" class="flex items-center space-x-2 focus:outline-none">
+                            <div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center">
+                                {% if userDetails.facultyPic %}
+                                <img src="{{ userDetails.facultyPic.url }}" alt="Profile" class="h-8 w-8 rounded-full object-cover">
+                                {% else %}
+                                <span class="text-sm font-medium">{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden md:block">{{ user.first_name }} {{ user.last_name }}</span>
+                            <i class='bx bx-chevron-down text-gray-500 dark:text-gray-400'></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10 hidden">
+                            <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                                <p class="text-sm font-medium text-dark dark:text-white">{{ user.first_name }} {{ user.last_name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Faculty</p>
+                            </div>
+                            <a href="{% url 'facultyProfile' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-user mr-2'></i>My Profile
+                            </a>
+                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            <a href="{% url 'facultyLogout' %}" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-log-out mr-2'></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Page Title -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-dark dark:text-white">Meetings</h1>
+                <nav class="flex space-x-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    <a href="{% url 'facultyDashboard' %}" class="hover:text-primary">Home</a>
+                    <span>/</span>
+                    <a href="{% url 'facultySubject' pk=id %}" class="hover:text-primary">Classroom</a>
+                    <span>/</span>
+                    <span class="text-primary">Meetings</span>
+                </nav>
+            </div>
+
+            {% if messages %}
+            <div class="mb-8">
+                {% for message in messages %}
+                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700 dark:bg-green-800/20 dark:text-green-300{% elif message.tags == 'error' %}bg-red-100 text-red-700 dark:bg-red-800/20 dark:text-red-300{% else %}bg-blue-100 text-blue-700 dark:bg-blue-800/20 dark:text-blue-300{% endif %} rounded-lg">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Classroom Info Card -->
+            <div class="card rounded-lg overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-dark dark:text-white">{{ classDetails.classname }}</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ classDetails.classDepartment }} - {{ classDetails.academicYear }}</p>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Class ID</h3>
+                            <p class="text-lg font-semibold text-dark dark:text-white mt-1">{{ classDetails.classId }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Students</h3>
+                            <p class="text-lg font-semibold text-dark dark:text-white mt-1">{{ totalStudents }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Meeting Link</h3>
+                            {% if classDetails.classLink %}
+                            <p class="text-lg font-semibold text-dark dark:text-white mt-1">
+                                <a href="{{ classDetails.classLink }}" target="_blank" class="text-primary hover:text-secondary flex items-center">
+                                    <i class='bx bx-link mr-2'></i>Join Meeting
+                                </a>
+                            </p>
+                            {% else %}
+                            <p class="text-lg font-semibold text-dark dark:text-white mt-1">Not Set</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meeting Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Create Meeting Card -->
+                <div class="card rounded-lg overflow-hidden">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="text-lg font-semibold text-dark dark:text-white">Schedule New Meeting</h2>
+                    </div>
+                    <div class="p-6">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting Title*</label>
+                                    <input type="text" name="title" id="title" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                </div>
+                                
+                                <div>
+                                    <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description*</label>
+                                    <textarea name="description" id="description" rows="3" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+                                </div>
+                                
+                                <div>
+                                    <label for="meetingLink" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Meeting Link*</label>
+                                    <input type="url" name="meetingLink" id="meetingLink" placeholder="https://meet.google.com/..." required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="meetingDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date*</label>
+                                        <input type="date" name="meetingDate" id="meetingDate" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    </div>
+                                    <div>
+                                        <label for="meetingTime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time*</label>
+                                        <input type="time" name="meetingTime" id="meetingTime" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-4">
+                                    <button type="submit" name="createMeeting" class="w-full py-3 px-4 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition duration-300 flex items-center justify-center">
+                                        <i class='bx bx-calendar-plus mr-2 text-xl'></i>
+                                        Schedule Meeting
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Update Meeting Link -->
+                <div class="card rounded-lg overflow-hidden">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="text-lg font-semibold text-dark dark:text-white">Update Default Meeting Link</h2>
+                    </div>
+                    <div class="p-6">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="meetLink" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Default Meeting Link*</label>
+                                    <input type="url" name="meetLink" id="meetLink" placeholder="https://meet.google.com/..." value="{{ classDetails.classLink|default:'' }}" required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">This link will be used as the default meeting link for this class</p>
+                                </div>
+                                
+                                <div class="pt-4">
+                                    <button type="submit" name="updateMeetingLink" class="w-full py-3 px-4 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition duration-300 flex items-center justify-center">
+                                        <i class='bx bx-link-alt mr-2'></i>
+                                        Update Link
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <div class="mt-8 space-y-4">
+                            <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-4">
+                                        <i class='bx bx-video-plus text-xl text-primary'></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-md font-medium text-dark dark:text-white">Create Google Meet</h3>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Set up a new Google Meet session</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <a href="https://meet.google.com/new" target="_blank" class="w-full py-2 px-4 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition duration-300 flex items-center justify-center">
+                                        <i class='bx bx-video mr-2'></i>
+                                        Create Meeting
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meeting Instructions -->
+            <div class="card rounded-lg overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-dark dark:text-white">How to Use Virtual Meetings</h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-500">
+                                    <span class="text-sm font-bold">1</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-base font-medium text-dark dark:text-white">Create a Meeting Link</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Create a meeting using Google Meet or your preferred video conferencing tool</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-500">
+                                    <span class="text-sm font-bold">2</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-base font-medium text-dark dark:text-white">Schedule the Meeting</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Use the form on this page to schedule a meeting with your students</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-500">
+                                    <span class="text-sm font-bold">3</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-base font-medium text-dark dark:text-white">Join the Meeting</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Click on the meeting link at the scheduled time to join the meeting with your students</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-500">
+                                    <span class="text-sm font-bold">4</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-base font-medium text-dark dark:text-white">Take Attendance</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Record student attendance in the <a href="{% url 'facultyAttendencePage' pk=id %}" class="text-primary hover:text-secondary">Attendance</a> section after the meeting</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-6">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <i class='bx bxs-graduation text-2xl text-primary'></i>
+                <span class="text-xl font-bold">ATLAS</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                &copy; 2024 ATLAS. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Dropdown Script -->
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            if (!document.getElementById('profile-dropdown').contains(e.target)) {
+                document.getElementById('dropdown-menu').classList.add('hidden');
+            }
+        });
+    </script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme Toggle functionality
+        function setTheme() {
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Set initial theme based on saved preference or system preference
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            }
+        }
+        
+        // Set theme on initial load
+        setTheme();
+        
+        // Handle theme toggle button click
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            }
+        });
+        
+        // Listen for changes in system theme
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (!localStorage.getItem('theme')) {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                    document.getElementById('moonIcon').classList.remove('hidden');
+                    document.getElementById('sunIcon').classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.getElementById('sunIcon').classList.remove('hidden');
+                    document.getElementById('moonIcon').classList.add('hidden');
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

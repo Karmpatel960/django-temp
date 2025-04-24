@@ -19,7 +19,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Create directories for static and media files
-RUN mkdir -p /app/static /app/media
+RUN mkdir -p /app/staticfiles /app/media
 
 # Create non-root user
 RUN useradd -m appuser && chown -R appuser:appuser /app

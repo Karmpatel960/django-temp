@@ -1,0 +1,470 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="ATLAS: Virtual Classroom for Modern Education">
+    <meta name="author" content="ATLAS Team">
+    <title>Study Materials - ATLAS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1D4ED8',
+                        dark: '#111827',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --color-primary: #3B82F6;
+            --color-secondary: #1D4ED8;
+            --color-text: #111827;
+            --color-text-secondary: #4B5563;
+            --color-background: #F9FAFB;
+            --color-card: #FFFFFF;
+        }
+        
+        .dark {
+            --color-primary: #3B82F6;
+            --color-secondary: #60A5FA;
+            --color-text: #F9FAFB;
+            --color-text-secondary: #D1D5DB;
+            --color-background: #111827;
+            --color-card: #1F2937;
+        }
+        
+        body {
+            color: var(--color-text);
+            background-color: var(--color-background);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .card {
+            background-color: var(--color-card);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .dark .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <i class='bx bxs-graduation text-2xl text-primary'></i>
+                    <span class="font-bold text-xl text-dark dark:text-white">ATLAS</span>
+                </div>
+                
+                <!-- Nav -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="{% url 'facultyDashboard' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                    <a href="{% url 'facultySubject' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Classroom</a>
+                    <a href="{% url 'facultyAttendencePage' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Attendance</a>
+                    <a href="{% url 'facultyAssignment' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Assignments</a>
+                    <a href="{% url 'facultyMaterial' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700">Materials</a>
+                    <a href="{% url 'facultyMeeting' pk=id %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Meetings</a>
+                </nav>
+                
+                <!-- Right Section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                        <i id="sunIcon" class='bx bx-sun text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                        <i id="moonIcon" class='bx bx-moon text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative" id="profile-dropdown">
+                        <button onclick="toggleDropdown()" class="flex items-center space-x-2 focus:outline-none">
+                            <div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center">
+                                {% if userDetails.facultyPic %}
+                                <img src="{{ userDetails.facultyPic.url }}" alt="Profile" class="h-8 w-8 rounded-full object-cover">
+                                {% else %}
+                                <span class="text-sm font-medium">{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden md:block">{{ user.first_name }} {{ user.last_name }}</span>
+                            <i class='bx bx-chevron-down text-gray-500 dark:text-gray-400'></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10 hidden">
+                            <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                                <p class="text-sm font-medium text-dark dark:text-white">{{ user.first_name }} {{ user.last_name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Faculty</p>
+                            </div>
+                            <a href="{% url 'facultyProfile' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-user mr-2'></i>My Profile
+                            </a>
+                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            <a href="{% url 'facultyLogout' %}" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-log-out mr-2'></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Page Title -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-dark dark:text-white">Study Materials</h1>
+                <nav class="flex space-x-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    <a href="{% url 'facultyDashboard' %}" class="hover:text-primary">Home</a>
+                    <span>/</span>
+                    <a href="{% url 'facultySubject' pk=id %}" class="hover:text-primary">Classroom</a>
+                    <span>/</span>
+                    <span class="text-primary">Materials</span>
+                </nav>
+            </div>
+
+            {% if messages %}
+            <div class="mb-8">
+                {% for message in messages %}
+                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700 dark:bg-green-800/20 dark:text-green-300{% elif message.tags == 'error' %}bg-red-100 text-red-700 dark:bg-red-800/20 dark:text-red-300{% else %}bg-blue-100 text-blue-700 dark:bg-blue-800/20 dark:text-blue-300{% endif %} rounded-lg">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Classroom Info Card -->
+            <div class="card rounded-lg overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-dark dark:text-white">{{ classDetails.classname }}</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ classDetails.classDepartment }} - {{ classDetails.academicYear }}</p>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Class ID</h3>
+                            <p class="text-lg font-semibold text-dark dark:text-white mt-1">{{ classDetails.classId }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Students</h3>
+                            <p class="text-lg font-semibold text-dark dark:text-white mt-1">{{ totalStudents }}</p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Materials Shared</h3>
+                            <p class="text-lg font-semibold text-dark dark:text-white mt-1">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Material Form -->
+            <div class="card rounded-lg overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-dark dark:text-white">Share New Material</h2>
+                </div>
+                <div class="p-6">
+                    <form method="POST" action="{% url 'facultyMaterial' pk=id %}" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="grid gap-6">
+                            <!-- Material Title -->
+                            <div>
+                                <label for="materialHeading" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Material Title <span class="text-red-500">*</span></label>
+                                <input type="text" name="materialHeading" id="materialHeading" required
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                    placeholder="Enter a descriptive title">
+                            </div>
+                            
+                            <!-- Material Description -->
+                            <div>
+                                <label for="materialDescription" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description <span class="text-red-500">*</span></label>
+                                <textarea name="materialDescription" id="materialDescription" required rows="3"
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                    placeholder="Enter a description of the material"></textarea>
+                            </div>
+                            
+                            <!-- Material Type -->
+                            <div>
+                                <label for="materialType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Material Type <span class="text-red-500">*</span></label>
+                                <select name="materialType" id="materialType" required
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                                    <option value="">Select material type</option>
+                                    <option value="Lecture Notes">Lecture Notes</option>
+                                    <option value="Presentation">Presentation</option>
+                                    <option value="Tutorial">Tutorial</option>
+                                    <option value="Reference">Reference</option>
+                                    <option value="Book">Book</option>
+                                    <option value="Research Paper">Research Paper</option>
+                                    <option value="Video">Video</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Material Link (Optional) -->
+                            <div>
+                                <label for="materialLink" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">External Link (Optional)</label>
+                                <input type="url" name="materialLink" id="materialLink"
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md focus:ring-primary focus:border-primary bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                    placeholder="https://example.com/resource">
+                            </div>
+                            
+                            <!-- Material File (Optional) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload File (Optional)</label>
+                                <div class="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-6 text-center hover:bg-gray-50 dark:hover:bg-gray-800/50 transition duration-150">
+                                    <input type="file" name="materialFile" id="materialFile" class="hidden">
+                                    <label for="materialFile" class="cursor-pointer block">
+                                        <i class='bx bx-upload text-gray-400 text-2xl mb-2'></i>
+                                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Drag and drop a file or click to browse</span>
+                                        <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">PDF, DOCX, PPTX, etc. (Max 10MB)</p>
+                                    </label>
+                                    <p id="file-name" class="mt-2 text-sm text-primary hidden"></p>
+                                </div>
+                            </div>
+                            
+                            <div class="border rounded-lg p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800">
+                                <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Tips for sharing materials:</h3>
+                                <ul class="list-disc pl-5 text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                                    <li>Use descriptive titles that clearly indicate what the material contains</li>
+                                    <li>Provide context in the description to help students understand how to use the material</li>
+                                    <li>Select the appropriate material type to help students find resources easily</li>
+                                    <li>You can share both a link and a file for the same material if needed</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div>
+                                <button type="submit" name="postMaterial" 
+                                        class="w-full px-4 py-3 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition duration-300 flex items-center justify-center">
+                                    <i class='bx bx-upload mr-2'></i>
+                                    <span>Share Material</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Materials List -->
+            <div class="card rounded-lg overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-dark dark:text-white">Shared Materials</h2>
+                </div>
+                <div class="p-6">
+                    {% if materials %}
+                        <div class="space-y-6">
+                            {% for material in materials %}
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                                <div class="flex items-start justify-between">
+                                    <div>
+                                        <div class="flex items-center space-x-2">
+                                            <h3 class="text-lg font-semibold text-dark dark:text-white">{{ material.materialHeading }}</h3>
+                                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                                                {{ material.materialType }}
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ material.materialDescription }}</p>
+                                        <div class="flex items-center mt-4 space-x-6">
+                                            <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                <i class='bx bx-calendar mr-2'></i>
+                                                <span>Posted: {{ material.publishedTime|date:"M d, Y" }}</span>
+                                            </div>
+                                            {% if material.materialLink %}
+                                            <a href="{{ material.materialLink }}" target="_blank" class="flex items-center text-sm text-primary hover:text-secondary">
+                                                <i class='bx bx-link-external mr-2'></i>
+                                                <span>View Link</span>
+                                            </a>
+                                            {% endif %}
+                                            {% if material.materialFile %}
+                                            <a href="{{ material.materialFile.url }}" target="_blank" class="flex items-center text-sm text-primary hover:text-secondary">
+                                                <i class='bx bx-download mr-2'></i>
+                                                <span>Download File</span>
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <form method="POST" action="{% url 'facultyMaterial' pk=id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="material_id" value="{{ material.materialId }}">
+                                        <button type="submit" name="deleteMaterial" class="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-600 text-sm rounded-lg transition duration-300 flex items-center dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400">
+                                            <i class='bx bx-trash mr-1'></i>
+                                            <span>Delete</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-12">
+                            <div class="text-gray-400 dark:text-gray-500 mb-3">
+                                <i class='bx bx-book-content text-5xl'></i>
+                            </div>
+                            <h3 class="text-lg font-medium text-dark dark:text-white mb-2">No materials shared yet</h3>
+                            <p class="text-gray-500 dark:text-gray-400 mb-4">Share your first study material using the form above</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-6">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <i class='bx bxs-graduation text-2xl text-primary'></i>
+                <span class="text-xl font-bold">ATLAS</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                &copy; 2024 ATLAS. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Dropdown Script -->
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            if (!document.getElementById('profile-dropdown').contains(e.target)) {
+                document.getElementById('dropdown-menu').classList.add('hidden');
+            }
+        });
+    </script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme Toggle functionality
+        function setTheme() {
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Set initial theme based on saved preference or system preference
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            }
+        }
+        
+        // Set theme on initial load
+        setTheme();
+        
+        // Handle theme toggle button click
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            }
+        });
+        
+        // Listen for changes in system theme
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (!localStorage.getItem('theme')) {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                    document.getElementById('moonIcon').classList.remove('hidden');
+                    document.getElementById('sunIcon').classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.getElementById('sunIcon').classList.remove('hidden');
+                    document.getElementById('moonIcon').classList.add('hidden');
+                }
+            }
+        });
+    </script>
+
+    <!-- File Upload Script -->
+    <script>
+        const fileInput = document.getElementById('materialFile');
+        const fileNameDisplay = document.getElementById('file-name');
+        const dropZone = fileInput.closest('div.border-dashed');
+        
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = `Selected: ${fileInput.files[0].name}`;
+                fileNameDisplay.classList.remove('hidden');
+                dropZone.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/20');
+            } else {
+                fileNameDisplay.classList.add('hidden');
+                dropZone.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/20');
+            }
+        });
+        
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('border-primary', 'bg-blue-50', 'dark:bg-blue-900/20');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('border-primary', 'bg-blue-50', 'dark:bg-blue-900/20');
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileNameDisplay.textContent = `Selected: ${files[0].name}`;
+                fileNameDisplay.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html> 

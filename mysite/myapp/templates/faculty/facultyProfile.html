@@ -1,250 +1,284 @@
-{% extends 'base.html' %}
-{% block title %}
-Admin Page
-{% endblock %}
-{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="ATLAS: Virtual Classroom for Modern Education">
+    <meta name="author" content="ATLAS Team">
+    <title>Faculty Profile | ATLAS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4154f1',
+                        secondary: '#717ff5',
+                        dark: '#012970',
+                        light: '#f6f9ff'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Custom CSS -->
+    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
+    
+    <style>
+        /* Theme variables */
+        :root {
+            --primary-color: #4154f1;
+            --secondary-color: #717ff5;
+            --text-primary: #012970;
+            --text-secondary: #444444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f9ff;
+            --card-bg: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #4154f1;
+            --secondary-color: #717ff5;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --card-bg: #374151;
+            --shadow-color: rgba(0, 0, 0, 0.25);
+        }
+        
+        body {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+        
+        .dark body {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+    </style>
+</head>
 
+<body class="font-['Inter'] bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="fixed w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="{% url 'facultyDashboard' %}" class="flex items-center space-x-3">
+                    <i class='bx bxs-graduation text-3xl text-primary'></i>
+                    <span class="text-2xl font-bold text-dark dark:text-white">ATLAS</span>
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
+                        <i class='bx bx-moon text-xl dark:text-white'></i>
+                    </button>
+                    
+                    <div class="relative" id="profile-dropdown">
+                        <button onclick="toggleDropdown()" class="flex items-center space-x-2 focus:outline-none">
+                            <img src="{{ userDetails.facultyPic.url }}" alt="Profile" class="h-8 w-8 rounded-full object-cover">
+                            <span class="text-dark dark:text-white font-medium hidden md:inline-block">{{ user.first_name }} {{ user.last_name }}</span>
+                            <i class='bx bx-chevron-down text-gray-500 dark:text-gray-400'></i>
+                        </button>
+                        
+                        <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-2 z-50">
+                            <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                                <p class="text-sm font-medium text-dark dark:text-white">{{ user.first_name }} {{ user.last_name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Faculty</p>
+                            </div>
+                            <a href="{% url 'facultyProfile' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-user mr-2'></i> My Profile
+                            </a>
+                            <a href="{% url 'facultyClassCreate' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-plus-circle mr-2'></i> Create Class
+                            </a>
+                            <div class="border-t border-gray-100 dark:border-gray-700 my-1"></div>
+                            <a href="{% url 'studentLogin' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-id-card mr-2'></i> Student View
+                            </a>
+                            <a href="{% url 'facultyLogout' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-log-out mr-2'></i> Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-  <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center px-lg-5">
-
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="{% url 'facultyDashboard' %}" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-lg-block">VirtualClassroom</span>
-      </a>
-    </div><!-- End Logo -->
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-        <li class="nav-item dropdown pe-3">
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="{{userDetails.facultyPic.url}}" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">{{user.first_name}} {{user.last_name}}</span>
-          </a><!-- End Profile Iamge Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>{{user.first_name}} {{user.last_name}}</h6>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url 'facultyProfile' %}">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-6 pt-24 pb-12">
+        <div class="flex flex-col space-y-6">
+            <!-- Page Title -->
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-dark dark:text-white">My Profile</h1>
+                    <nav class="flex" aria-label="Breadcrumb">
+                        <ol class="inline-flex items-center space-x-1 md:space-x-3 text-sm">
+                            <li class="inline-flex items-center">
+                                <a href="{% url 'facultyDashboard' %}" class="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary">
+                                    <i class='bx bx-home-alt mr-2'></i>
+                                    Home
               </a>
             </li>
-            <li>
-              <hr class="dropdown-divider">
+                            <li aria-current="page">
+                                <div class="flex items-center">
+                                    <i class='bx bx-chevron-right text-gray-500 dark:text-gray-400'></i>
+                                    <span class="ml-1 text-gray-500 dark:text-gray-400">Profile</span>
+                                </div>
             </li>
-
-
-            {% if user.is_authenticated %}
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url 'facultyLogout' %}">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-            {% else %}
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="#">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-            {% endif %}
-
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-      </ul>
-    </nav><!-- End Icons Navigation -->
-  </header><!-- End Header -->
-
-
-  <main id="main" class="main px-lg-5">
-    <div class="pagetitle">
-      <h1>Profile</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'facultyDashboard' %}">Home</a></li>
-          <li class="breadcrumb-item active">Profile</li>
         </ol>
       </nav>
-    </div><!-- End Page Title -->
+                </div>
+            </div>
 
-
-
-    <section class="section profile">
-
-      <div class="row">
-        <div class="col-xl-4">
-
-          <div class="card">
-              <div class="card-body  align-items-center">
-              <div class=" text-center py-3 mx-1 mt-2" style="border-radius:10px;">
-                <div class="px-4">
-                  <div class="m-auto ">
-                    <div class="user-profile-photo  m-auto " style="border:50%; height:200px; width:200px;">
-                      <img src="{{ userDetails.facultyPic.url }}" style="border:50%; height:200px; width:200px;" alt="" class="rounded-circle">
+            <!-- Profile Section -->
+            <div class="grid md:grid-cols-3 gap-6">
+                <!-- Profile Card -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="bg-gradient-to-r from-primary to-secondary p-6 flex flex-col items-center">
+                        <img src="{{ userDetails.facultyPic.url }}" alt="Profile" class="h-32 w-32 rounded-full object-cover border-4 border-white">
                     </div>
+                    <div class="p-6 text-center">
+                        <h2 class="text-xl font-bold text-dark dark:text-white">{{ user.first_name }} {{ user.last_name }}</h2>
+                        <p class="text-gray-600 dark:text-gray-400 mb-2">{{ userDetails.facultyCollege }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-500">Faculty ID: {{ userDetails.facultyId }}</p>
+                        
+                        <div class="mt-6 space-y-3">
+                            <div class="flex items-center text-sm">
+                                <i class='bx bx-envelope text-primary mr-3'></i>
+                                <span class="text-gray-600 dark:text-gray-400">{{ user.email }}</span>
                   </div>
-                  <div class="">
-                    <h3  class="mt-3" style="font-family:impact;"> {{user.first_name}} {{user.last_name}}</h3>
-                    <h5 class="my-1">{{ userDetails.facultyCollege }}</h5>
-                    <h6 class="my-1">Faculty ID : <strong>{{userDetails.facultyId}}</strong></h6>
+                            <div class="flex items-center text-sm">
+                                <i class='bx bx-phone text-primary mr-3'></i>
+                                <span class="text-gray-600 dark:text-gray-400">{{ userDetails.facultyPhone }}</span>
                   </div>
+                            <div class="flex items-center text-sm">
+                                <i class='bx bx-map-pin text-primary mr-3'></i>
+                                <span class="text-gray-600 dark:text-gray-400">{{ userDetails.collegeState }}</span>
                 </div>
               </div>
             </div>
           </div>
 
-        </div>
-
-        <div class="col-xl-8">
-
-          <div class="card px-3">
-            <div class="card-body pt-3">
-              <!-- Bordered Tabs -->
-              <ul class="nav nav-tabs nav-tabs-bordered">
-
-                <li class="nav-item">
-                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
+                <!-- Details Card -->
+                <div class="md:col-span-2">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                        <!-- Tabs -->
+                        <div class="border-b border-gray-200 dark:border-gray-700">
+                            <ul class="flex -mb-px">
+                                <li class="mr-2">
+                                    <button type="button" class="inline-block py-4 px-4 text-primary font-medium border-b-2 border-primary active" id="overview-tab" onclick="openTab('overview')">Overview</button>
                 </li>
-
-                <li class="nav-item">
-                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile-edit">Edit Profile</button>
+                                <li class="mr-2">
+                                    <button type="button" class="inline-block py-4 px-4 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary font-medium" id="edit-tab" onclick="openTab('edit')">Edit Profile</button>
                 </li>
               </ul>
-              <div class="tab-content pt-2">
-
-                <div class="tab-pane fade show active profile-overview" id="profile-overview">
-                  <h5 class="card-title">About</h5>
-                  <p class="small fst-italic">{{userDetails.facultyDesc}}</p>
-
-                  <h5 class="card-title">Profile Details</h5>
-
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label ">Full Name</div>
-                    <div class="col-lg-9 col-md-8">{{user.first_name}} {{user.last_name}}</div>
                   </div>
 
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label">Institution Name</div>
-                    <div class="col-lg-9 col-md-8">{{userDetails.facultyCollege}}</div>
+                        <!-- Tab Content - Overview -->
+                        <div id="overview-content" class="p-6 tab-content">
+                            <h3 class="text-lg font-semibold text-dark dark:text-white mb-3">About</h3>
+                            <p class="text-gray-600 dark:text-gray-400 mb-6">{{ userDetails.facultyDesc }}</p>
+                            
+                            <h3 class="text-lg font-semibold text-dark dark:text-white mb-3">Profile Details</h3>
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Full Name</div>
+                                    <div class="col-span-2 text-gray-700 dark:text-gray-300">{{ user.first_name }} {{ user.last_name }}</div>
                   </div>
-
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label">Teaching Experience</div>
-                    <div class="col-lg-9 col-md-8">{{userDetails.experience}} year</div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Institution Name</div>
+                                    <div class="col-span-2 text-gray-700 dark:text-gray-300">{{ userDetails.facultyCollege }}</div>
                   </div>
-
-
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label">State</div>
-                    <div class="col-lg-9 col-md-8">{{userDetails.collegeState}}</div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Teaching Experience</div>
+                                    <div class="col-span-2 text-gray-700 dark:text-gray-300">{{ userDetails.experience }} year(s)</div>
                   </div>
-
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label">Phone</div>
-                    <div class="col-lg-9 col-md-8">{{userDetails.facultyPhone}}</div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400">State</div>
+                                    <div class="col-span-2 text-gray-700 dark:text-gray-300">{{ userDetails.collegeState }}</div>
                   </div>
-
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label">Email</div>
-                    <div class="col-lg-9 col-md-8">{{user.email}}</div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Phone</div>
+                                    <div class="col-span-2 text-gray-700 dark:text-gray-300">{{ userDetails.facultyPhone }}</div>
                   </div>
-
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label ">Gender</div>
-                    <div class="col-lg-9 col-md-8">{{userDetails.facultyGender}}</div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</div>
+                                    <div class="col-span-2 text-gray-700 dark:text-gray-300">{{ user.email }}</div>
                   </div>
-
-                  <div class="row">
-                    <div class="col-lg-3 col-md-4 label ">Date of Birth</div>
-                    <div class="col-lg-9 col-md-8">{{userDetails.facultyDOB | date:'Y-m-d'}}</div>
-                  </div>
-
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Gender</div>
+                                    <div class="col-span-2 text-gray-700 dark:text-gray-300">{{ userDetails.facultyGender }}</div>
                 </div>
-
-                <div class="tab-pane fade profile-edit pt-3" id="profile-edit">
-
-                  <!-- Profile Edit Form -->
-                  <form enctype="multipart/form-data" method="POST">
-                    {% csrf_token %}
-
-                    <div class="row mb-3">
-                      <label for="profileImage" class="col-md-4 col-lg-3 col-form-label">Profile Image</label>
-                      <div class="col-md-8 col-lg-9" >
-                        <img src="{{ userDetails.facultyPic.url }}" alt="Profile" style="height:150px;">
-                        <div class="col-12 my-2">
-                          <!-- <label for="facultyPic" class="col-form-label">Profile Picture</label> -->
-                          <div class="col-sm-12">
-                            <input class="form-control" name="profilePic" accept="image/*" type="file" id="formFile" >
-                          </div>
-                          <div class="invalid-feedback">Please upload your Profile Picture</div>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="text-sm font-medium text-gray-500 dark:text-gray-400">Date of Birth</div>
+                                    <div class="col-span-2 text-gray-700 dark:text-gray-300">{{ userDetails.facultyDOB | date:'Y-m-d' }}</div>
                         </div>
                       </div>
                     </div>
 
-                    <div class="row mb-3">
-                      <label for="fullName" class="col-md-4 col-lg-3 col-form-label">Full Name</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="name" type="text" class="form-control" id="fullName" value="{{user.first_name}} {{user.last_name}}" disabled required>
+                        <!-- Tab Content - Edit Profile -->
+                        <div id="edit-content" class="p-6 tab-content hidden">
+                            <form enctype="multipart/form-data" method="POST" class="space-y-6">
+                                {% csrf_token %}
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Image</label>
+                                    <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+                                        <img src="{{ userDetails.facultyPic.url }}" alt="Profile" class="h-24 w-24 object-cover rounded-full">
+                                        <div class="flex-1">
+                                            <input type="file" name="profilePic" accept="image/*" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Upload a new profile picture (optional)</p>
+                                        </div>
                       </div>
                     </div>
 
-                    <div class="row mb-3">
-                      <label for="about" class="col-md-4 col-lg-3 col-form-label">About*</label>
-                      <div class="col-md-8 col-lg-9">
-                        <textarea name="about" class="form-control" id="about" style="height: 100px" required>{{userDetails.facultyDesc}}</textarea>
-                        <div class="invalid-feedback">Please tell something about Yourself</div>
-                      </div>
+                                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                    <div>
+                                        <label for="fullName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                                        <input name="name" type="text" id="fullName" value="{{ user.first_name }} {{ user.last_name }}" disabled required class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 cursor-not-allowed">
                     </div>
 
-                    <div class="row mb-3">
-                      <label for="company" class="col-md-4 col-lg-3 col-form-label">Institution*</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="institute" type="text" class="form-control" id="institute" value="{{userDetails.facultyCollege}}" required>
-                        <div class="invalid-feedback">Please Enter your Institution</div>
-                      </div>
+                                    <div>
+                                        <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                                        <input name="contact" type="text" id="phone" value="{{ userDetails.facultyPhone }}" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                     </div>
 
-
-                    <div class="row mb-3">
-                      <label for="Job" class="col-md-4 col-lg-3 col-form-label">Teaching Experience(in years)*</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="year" type="number" min="0" max="50" class="form-control" id="Job" value="{{userDetails.experience}}" required>
-                        <div class="invalid-feedback">Please Enter your Teaching Experience (Between 0-50)</div>
-                      </div>
+                                    <div>
+                                        <label for="institute" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institution Name</label>
+                                        <input name="institute" type="text" id="institute" value="{{ userDetails.facultyCollege }}" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                     </div>
 
-
-                    <div class="row mb-3">
-                      <label for="state" class="col-md-4 col-lg-3 col-form-label">State*</label>
-                      <div class="col-md-8 col-lg-9">
-                        <select class="form-select" name="state" aria-label="Default select example" required>
-                          <option value="{{userDetails.collegeState}}" selected disabled>{{userDetails.collegeState}}</option>
+                                    <div>
+                                        <label for="state" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
+                                        <select name="state" id="state" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                            <option value="{{ userDetails.collegeState }}" selected>{{ userDetails.collegeState }}</option>
                           <option value="Andhra Pradesh">Andhra Pradesh</option>
-                          <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
                           <option value="Arunachal Pradesh">Arunachal Pradesh</option>
                           <option value="Assam">Assam</option>
                           <option value="Bihar">Bihar</option>
-                          <option value="Chandigarh">Chandigarh</option>
                           <option value="Chhattisgarh">Chhattisgarh</option>
-                          <option value="Dadar and Nagar Haveli">Dadar and Nagar Haveli</option>
-                          <option value="Daman and Diu">Daman and Diu</option>
-                          <option value="Delhi">Delhi</option>
-                          <option value="Lakshadweep">Lakshadweep</option>
-                          <option value="Puducherry">Puducherry</option>
                           <option value="Goa">Goa</option>
                           <option value="Gujarat">Gujarat</option>
                           <option value="Haryana">Haryana</option>
                           <option value="Himachal Pradesh">Himachal Pradesh</option>
-                          <option value="Jammu and Kashmir">Jammu and Kashmir</option>
                           <option value="Jharkhand">Jharkhand</option>
                           <option value="Karnataka">Karnataka</option>
                           <option value="Kerala">Kerala</option>
@@ -265,82 +299,134 @@ Admin Page
                           <option value="Uttarakhand">Uttarakhand</option>
                           <option value="West Bengal">West Bengal</option>
                         </select>
-                      </div>
-                      <div class="invalid-feedback">Please enter the State!</div>
                     </div>
 
-
-                    <div class="row mb-3">
-                      <label for="Phone" class="col-md-4 col-lg-3 col-form-label">Contact*</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="contact" type="text" class="form-control" pattern="[0-9]{10}" id="Phone" value="{{userDetails.facultyPhone}}" required>
-                        <div class="invalid-feedback">Please Enter Valid Contact No.</div>
+                                    <div>
+                                        <label for="experience" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teaching Experience (years)</label>
+                                        <input name="year" type="number" id="experience" value="{{ userDetails.experience }}" min="0" max="50" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
                       </div>
                     </div>
 
-                    <div class="row mb-3">
-                      <label for="Email" class="col-md-4 col-lg-3 col-form-label">Email</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="email" type="email" class="form-control" id="Email" value="{{user.email}}" disabled required>
-                      </div>
+                                <div>
+                                    <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">About</label>
+                                    <textarea name="about" id="about" rows="4" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg py-2 px-4 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">{{ userDetails.facultyDesc }}</textarea>
                     </div>
 
-                    <!-- <div class="row mb-3">
-                      <label for="Twitter" class="col-md-4 col-lg-3 col-form-label">Twitter Profile</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="twitter" type="text" class="form-control" id="Twitter" value="https://twitter.com/#">
+                                <div class="flex justify-end pt-4">
+                                    <button type="submit" class="px-4 py-2 bg-primary hover:bg-secondary text-white font-medium rounded-lg transition duration-300">
+                                        Save Changes
+                                    </button>
+                      </div>
+                            </form>
                       </div>
                     </div>
-
-                    <div class="row mb-3">
-                      <label for="Facebook" class="col-md-4 col-lg-3 col-form-label">Facebook Profile</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="facebook" type="text" class="form-control" id="Facebook" value="https://facebook.com/#">
-                      </div>
-                    </div>
-
-                    <div class="row mb-3">
-                      <label for="Instagram" class="col-md-4 col-lg-3 col-form-label">Instagram Profile</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="instagram" type="text" class="form-control" id="Instagram" value="https://instagram.com/#">
-                      </div>
-                    </div>
-
-                    <div class="row mb-3">
-                      <label for="Linkedin" class="col-md-4 col-lg-3 col-form-label">Linkedin Profile</label>
-                      <div class="col-md-8 col-lg-9">
-                        <input name="linkedin" type="text" class="form-control" id="Linkedin" value="https://linkedin.com/#">
-                      </div>
-                    </div> -->
-
-                    <div class="text-center">
-                      <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </div>
-                  </form><!-- End Profile Edit Form -->
-
                 </div>
-
-                <div class="tab-pane fade pt-3" id="profile-settings">
-
-                </div>
-
-
-              </div><!-- End Bordered Tabs -->
-
             </div>
           </div>
+    </main>
 
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-6">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <i class='bx bxs-graduation text-2xl text-primary'></i>
+                <span class="text-xl font-bold">ATLAS</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                &copy; 2024 ATLAS. All rights reserved.
+            </p>
         </div>
-      </div>
-    </section>
+    </footer>
 
-  </main><!-- End #main -->
-
-  <!-- ======= Footer ======= -->
-  {% include 'partials/_footer.html'%}
-  <!-- ======= Footer Ends ======= -->
-
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-
-  {% endblock %}
+    <!-- Dropdown Script -->
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            if (!document.getElementById('profile-dropdown').contains(e.target)) {
+                document.getElementById('dropdown-menu').classList.add('hidden');
+            }
+        });
+    </script>
+    
+    <!-- Tab Toggle Script -->
+    <script>
+        function openTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-content').classList.remove('hidden');
+            
+            // Update tab button styling
+            const tabs = document.querySelectorAll('[id$="-tab"]');
+            tabs.forEach(tab => {
+                tab.classList.remove('text-primary', 'border-primary');
+                tab.classList.add('text-gray-500', 'dark:text-gray-400');
+            });
+            
+            document.getElementById(tabName + '-tab').classList.remove('text-gray-500', 'dark:text-gray-400');
+            document.getElementById(tabName + '-tab').classList.add('text-primary', 'border-primary');
+        }
+    </script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleIcon = themeToggleBtn.querySelector('i');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            
+            // Function to set theme
+            function setTheme(isDark) {
+                htmlElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+                htmlElement.classList.toggle('dark', isDark);
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateIcon(isDark);
+            }
+            
+            if (savedTheme) {
+                setTheme(savedTheme === 'dark');
+            } else {
+                // Check if user prefers dark mode
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(prefersDark);
+            }
+            
+            // Toggle theme on button click
+            themeToggleBtn.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                setTheme(currentTheme === 'light');
+            });
+            
+            // Update icon based on current theme
+            function updateIcon(isDark) {
+                if (isDark) {
+                    themeToggleIcon.classList.remove('bx-moon');
+                    themeToggleIcon.classList.add('bx-sun');
+                } else {
+                    themeToggleIcon.classList.remove('bx-sun');
+                    themeToggleIcon.classList.add('bx-moon');
+                }
+            }
+            
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                if (!localStorage.getItem('theme')) {
+                    setTheme(e.matches);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

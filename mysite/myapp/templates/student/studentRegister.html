@@ -1,102 +1,208 @@
-{% extends 'base.html' %}
-{% block title %}
-Admin Page
-{% endblock %}
-{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="ATLAS: Virtual Classroom for Modern Education">
+    <meta name="author" content="ATLAS Team">
+    <title>Student Registration | ATLAS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4154f1',
+                        secondary: '#717ff5',
+                        dark: '#012970',
+                        light: '#f6f9ff'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Custom CSS -->
+    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
+    
+    <style>
+        /* Theme variables */
+        :root {
+            --primary-color: #4154f1;
+            --secondary-color: #717ff5;
+            --text-primary: #012970;
+            --text-secondary: #444444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f9ff;
+            --card-bg: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #4154f1;
+            --secondary-color: #717ff5;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --card-bg: #374151;
+            --shadow-color: rgba(0, 0, 0, 0.25);
+        }
+        
+        .dark [data-theme="dark"] .dark\:text-white {
+            color: var(--text-primary);
+        }
+        
+        .dark [data-theme="dark"] .dark\:bg-gray-800 {
+            background-color: var(--card-bg);
+        }
+        
+        input::-webkit-calendar-picker-indicator {
+            filter: invert(0.5);
+        }
+        
+        [data-theme="dark"] input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+    </style>
+</head>
 
-  <main style="background: #eee;">
-    <div class="container">
+<body class="font-['Inter'] bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="fixed w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="{% url 'landing' %}" class="flex items-center space-x-3">
+                    <i class='bx bxs-graduation text-3xl text-primary'></i>
+                    <span class="text-2xl font-bold text-dark dark:text-white">ATLAS</span>
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
+                        <i class='bx bx-moon text-xl dark:text-white'></i>
+                    </button>
+                    <a href="{% url 'facultyRegister' %}" class="px-4 py-2 text-primary hover:bg-primary/10 rounded-lg transition">Faculty Registration</a>
+                    <a href="{% url 'studentLogin' %}" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition">Student Login</a>
+                </div>
+            </div>
+        </nav>
+    </header>
 
-      <section class="section register min-vh-100 d-flex flex-column align-items-center justify-content-center pt-3">
-        <div class="container">
-
-           <div class="card mb-3 px-lg-4" style="border-radius:30px;">
-              <div class="card-body " >
-                <div class="row ">
-
-                  <form class="row g-3 needs-validation"  enctype="multipart/form-data"  method='POST' novalidate>
-                    {% csrf_token %}
-
-                    <div class=" mt-0 container">
-                      <div class=" pb-2">
-                        <h5 class="card-title text-center pb-0 fs-4">Create a Student Account</h5>
-                        <p class="text-center small">Enter your personal details to create account</p>
+    <!-- Registration Form Section -->
+    <main class="flex-grow flex items-center justify-center px-6 pt-24 pb-12">
+        <div class="w-full max-w-5xl">
+            <!-- Error messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="{% if message.tags == 'error' %}bg-red-100 border-l-4 border-red-500 text-red-700{% else %}bg-green-100 border-l-4 border-green-500 text-green-700{% endif %} p-4 mb-6 rounded">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                {% if message.tags == 'error' %}
+                                    <i class='bx bx-error-circle text-xl'></i>
+                                {% else %}
+                                    <i class='bx bx-check-circle text-xl'></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm">{{ message }}</p>
+                            </div>
                       </div>
                     </div>
-                      <!-- right Form -->
-                      <div class=" col-xxl-6 col-md-6  px-lg-3 mt-2">
-                              <div class="row d-flex">
-                                <div class="col-lg-6">
-                                <label for="fname" class="form-label">First Name*</label>
-                                <input type="text" class="form-control" id="fname" name="fname" required>
-                                <div class="invalid-feedback">Please enter First Name!</div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- Registration Card -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-bold text-dark dark:text-white">Create a Student Account</h2>
+                        <p class="text-gray-600 dark:text-gray-400 mt-2">Enter your personal details to create an account</p>
+                    </div>
+                    
+                    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Left Column -->
+                            <div class="space-y-5">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="fname" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name*</label>
+                                        <input type="text" id="fname" name="fname" required
+                                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="First name">
+                                    </div>
+                                    <div>
+                                        <label for="lname" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name*</label>
+                                        <input type="text" id="lname" name="lname" required
+                                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="Last name">
                                 </div>
-                                <div class="col-lg-6">
-                                <label for="lname" class="form-label">Last Name*</label>
-                                <input type="text" class="form-control" id="lname" name="lname" required>
-                                <div class="invalid-feedback">Please enter Last Name!</div>
-                                </div>
                               </div>
 
-                              <div class="col-12 my-2">
-                                <label for="yourEmail" class="form-label">Your Email*</label>
-                                <input type="email" name="email" class="form-control" id="yourEmail" required>
-                                <div class="invalid-feedback">Please enter a valid Email adddress!</div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address*</label>
+                                    <input type="email" id="email" name="email" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="your.email@example.com">
                               </div>
 
-                              <div class="col-12 my-2">
-                                <label for="yourPassword" class="form-label">Password*</label>
-                                <input type="password" pattern=".{6,15}" name="password" class="form-control" id="yourPassword" required>
-                                <div class="invalid-feedback">Please enter a valid password of length between 6 to 15!</div>
+                                <div>
+                                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password*</label>
+                                    <input type="password" id="password" name="password" pattern=".{6,15}" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="6-15 characters">
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Password must be 6-15 characters long</p>
                               </div>
 
-
-                              <div class="col-12 my-2">
-                                <label for="yourPassword" class="form-label">Gender*</label>
-                                <div class="col-sm-12">
-                                  <select class="form-select" name="gender" aria-label="Default select example" required>
-                                    <option value="" selected disabled>Select</option>
+                                <div>
+                                    <label for="gender" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender*</label>
+                                    <select id="gender" name="gender" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="" selected disabled>Select gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                     <option value="Other">Other</option>
                                   </select>
-                                </div>
-                                <div class="invalid-feedback">Please enter your Gender!</div>
                               </div>
 
-
-                              <div class="col-12 my-2">
-                                  <label for="inputDate" class="col-form-label">Date of Birth*</label>
-                                  <div class="">
-                                    <input type="date" name="dob" class="form-control" max="2020-12-31"  required>
-                                  </div>
+                                <div>
+                                    <label for="dob" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Birth*</label>
+                                    <input type="date" id="dob" name="dob" max="2020-12-31" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
                               </div>
 
-
-                              <div class="col-12 my-2">
-                                <label for="inputPassword" class="col-form-label">Contact Number*</label>
-                                <div class="col-sm-12">
-                                  <input type="text" name="contact" pattern="[0-9]{10}" class="form-control" required></input>
-                                  <div class="invalid-feedback">Please Enter Valid Contact No.</div>
+                                <div>
+                                    <label for="contact" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact Number*</label>
+                                    <input type="text" id="contact" name="contact" pattern="[0-9]{10}" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="10-digit number">
                                 </div>
                               </div>
 
-                          </div>  <!-- End Right Form  -->
-
-
-                      <!-- Left Form -->
-                      <div class="col-xxl-6 col-md-6 mt-0">
-                              <div class="col-12 my-2">
-                                <label for="yourPassword" class="form-label">Institution Name*</label>
-                                <input type="text" name="institute" class="form-control" required>
-                                <div class="invalid-feedback">Please enter your Institution!</div>
+                            <!-- Right Column -->
+                            <div class="space-y-5">
+                                <div>
+                                    <label for="institute" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institution Name*</label>
+                                    <input type="text" id="institute" name="institute" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="Your institution name">
                               </div>
 
-                              <div class="col-12 my-2">
-                                <label for="yourPassword" class="form-label">Academic Year*</label>
-                                <div class="col-sm-12">
-                                  <select class="form-select" name="yos" aria-label="Default select example" required>
-                                    <option value="" selected disabled>Select</option>
+                                <div>
+                                    <label for="yos" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Academic Year*</label>
+                                    <select id="yos" name="yos" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="" selected disabled>Select year</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
                                     <option value="3">3</option>
@@ -104,21 +210,20 @@ Admin Page
                                     <option value="5">5</option>
                                     <option value="6">6</option>
                                   </select>
-                                </div>
-                                <div class="invalid-feedback">Please enter Academic Year!</div>
                               </div>
 
-                              <div class="col-12 my-2">
-                                <label for="department" class="form-label">Department*</label>
-                                <input type="text" name="department" class="form-control" required>
-                                <div class="invalid-feedback">Please enter your Department!</div>
+                                <div>
+                                    <label for="department" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department*</label>
+                                    <input type="text" id="department" name="department" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="Your department">
                               </div>
 
-                              <div class="col-12 my-2">
-                                <label for="yourPassword" class="form-label">State*</label>
-                                <div class="col-sm-12">
-                                  <select class="form-select" name="state" aria-label="Default select example" required>
-                                    <option value="" selected disabled>Select</option>
+                                <div>
+                                    <label for="state" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State*</label>
+                                    <select id="state" name="state" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="" selected disabled>Select state</option>
                                     <option value="Andhra Pradesh">Andhra Pradesh</option>
                                     <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
                                     <option value="Arunachal Pradesh">Arunachal Pradesh</option>
@@ -156,64 +261,128 @@ Admin Page
                                     <option value="Uttarakhand">Uttarakhand</option>
                                     <option value="West Bengal">West Bengal</option>
                                   </select>
-                                </div>
-                                <div class="invalid-feedback">Please enter the State!</div>
                               </div>
 
-
-
-                              <div class="col-12 my-2">
-                                <label for="inputPassword" class="col-form-label">About You*</label>
-                                <div class="col-sm-12">
-                                  <textarea class="form-control" name="about" style="height: 50px" required></textarea>
-                                  <div class="invalid-feedback">Please tell something about you!</div>
-                                </div>
+                                <div>
+                                    <label for="about" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">About You*</label>
+                                    <textarea id="about" name="about" rows="2" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                                        placeholder="Tell us about yourself"></textarea>
                               </div>
 
-
-
-                              <div class="col-12 my-2">
-                                <label for="profilePic" class="col-form-label">Profile Picture*</label>
-                                <div class="col-sm-12">
-                                  <input class="form-control" name="profilePic" accept="image/*" type="file" id="formFile" required>
+                                <div>
+                                    <label for="profilePic" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Profile Picture*</label>
+                                    <input type="file" id="profilePic" name="profilePic" accept="image/*" required
+                                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
                                 </div>
-                                <div class="invalid-feedback">Please upload your Profile Picture</div>
-                              </div>
-
-                              <div class="col-12 my-2 mt-4">
-                                <div class="form-check">
-                                  <input class="form-check-input" name="terms" type="checkbox" value="" id="acceptTerms" required>
-                                  <label class="form-check-label" for="acceptTerms">I agree and accept the <a href="">terms and conditions</a></label>
-                                  <div class="invalid-feedback">You must agree before submitting.</div>
                                 </div>
                               </div>
 
-
-                          </div> <!-- End Left Form  -->
-
-
-                        <div class="container col-lg-6 col-sm-12 mt-lg-3">
-
-                          <div class="col-12">
-                            <button class="btn btn-primary w-100" name="submit" type="submit" style="background: #1b1e7b; border-color:#1b1e7b;">Create Account</button>
-                          </div>
-                          <div class="d-flex align-items-center justify-content-center mt-lg-3 pb-4">
-                            <p class="mb-0 me-2">Already have an account</p>
-                            <a href="{% url 'studentLogin'%}" type="button" class="btn btn-outline-danger">Login Now</a>
+                        <div class="mt-8">
+                            <div class="flex items-center mb-6">
+                                <input id="terms" name="terms" type="checkbox" required
+                                    class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+                                <label for="terms" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                                    I agree and accept the <a href="#" class="text-primary hover:text-secondary">terms and conditions</a>
+                                </label>
+                            </div>
+                            
+                            <button type="submit" 
+                                class="w-full bg-primary hover:bg-secondary text-white font-medium py-3 px-4 rounded-lg transition duration-200">
+                                Create Account
+                            </button>
+                            
+                            <div class="mt-6 text-center text-sm">
+                                <span class="text-gray-600 dark:text-gray-400">Already have an account?</span>
+                                <a href="{% url 'studentLogin' %}" class="text-primary hover:text-secondary font-medium ml-1">
+                                    Sign in
+                                </a>
                           </div>
                         </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
 
-                      </form>
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-6">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <i class='bx bxs-graduation text-2xl text-primary'></i>
+                <span class="text-xl font-bold">ATLAS</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                &copy; 2024 ATLAS. All rights reserved.
+            </p>
+        </div>
+    </footer>
 
-                    </div> <!-- Row Ends -->
-                  </div><!-- Card Body Ends Ends -->
-                </div><!-- Card ends -->
+    <!-- Form Validation Script -->
+    <script>
+        // Enable validation on form
+        (function() {
+            'use strict';
+            
+            const forms = document.querySelectorAll('.needs-validation');
+            
+            Array.from(forms).forEach(function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    </script>
 
-      </section>
-
-    </div>
-  </main><!-- End #main -->
-
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-{% endblock %}
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleIcon = themeToggleBtn.querySelector('i');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-theme', savedTheme);
+                htmlElement.classList.toggle('dark', savedTheme === 'dark');
+                updateIcon(savedTheme === 'dark');
+            } else {
+                // Check if user prefers dark mode
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                htmlElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                htmlElement.classList.toggle('dark', prefersDark);
+                updateIcon(prefersDark);
+            }
+            
+            // Toggle theme on button click
+            themeToggleBtn.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                htmlElement.setAttribute('data-theme', newTheme);
+                htmlElement.classList.toggle('dark');
+                localStorage.setItem('theme', newTheme);
+                
+                updateIcon(newTheme === 'dark');
+            });
+            
+            // Update icon based on current theme
+            function updateIcon(isDark) {
+                if (isDark) {
+                    themeToggleIcon.classList.remove('bx-moon');
+                    themeToggleIcon.classList.add('bx-sun');
+                } else {
+                    themeToggleIcon.classList.remove('bx-sun');
+                    themeToggleIcon.classList.add('bx-moon');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,139 +1,285 @@
-{% extends 'base.html' %}
-{% block title %}
-Admin Page
-{% endblock %}
-{% block content %}
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="ATLAS: Virtual Classroom for Modern Education">
+    <meta name="author" content="ATLAS Team">
+    <title>Assignment Submissions - ATLAS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1D4ED8',
+                        dark: '#111827',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    
+    <style>
+        :root {
+            --color-primary: #3B82F6;
+            --color-secondary: #1D4ED8;
+            --color-text: #111827;
+            --color-text-secondary: #4B5563;
+            --color-background: #F9FAFB;
+            --color-card: #FFFFFF;
+        }
+        
+        .dark {
+            --color-primary: #3B82F6;
+            --color-secondary: #60A5FA;
+            --color-text: #F9FAFB;
+            --color-text-secondary: #D1D5DB;
+            --color-background: #111827;
+            --color-card: #1F2937;
+        }
+        
+        body {
+            color: var(--color-text);
+            background-color: var(--color-background);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .card {
+            background-color: var(--color-card);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .dark .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
 
-<style media="screen">
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <i class='bx bxs-graduation text-2xl text-primary'></i>
+                    <span class="font-bold text-xl text-dark dark:text-white">ATLAS</span>
+                </div>
+                
+                <!-- Nav -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="{% url 'facultyDashboard' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Dashboard</a>
+                    <a href="{% url 'facultySubject' pk=classId %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Classroom</a>
+                    <a href="{% url 'facultyAttendencePage' pk=classId %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Attendance</a>
+                    <a href="{% url 'facultyAssignment' pk=classId %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700">Assignments</a>
+                    <a href="{% url 'facultyMaterial' pk=classId %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Materials</a>
+                    <a href="{% url 'facultyMeeting' pk=classId %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700">Meetings</a>
+                </nav>
+                
+                <!-- Right Section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                        <i id="sunIcon" class='bx bx-sun text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                        <i id="moonIcon" class='bx bx-moon text-2xl text-gray-500 dark:text-gray-400 hidden'></i>
+                    </button>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="relative" id="profile-dropdown">
+                        <button onclick="toggleDropdown()" class="flex items-center space-x-2 focus:outline-none">
+                            <div class="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center">
+                                {% if userDetails.facultyPic %}
+                                <img src="{{ userDetails.facultyPic.url }}" alt="Profile" class="h-8 w-8 rounded-full object-cover">
+                                {% else %}
+                                <span class="text-sm font-medium">{{ request.user.first_name|slice:":1" }}{{ request.user.last_name|slice:":1" }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden md:block">{{ user.first_name }} {{ user.last_name }}</span>
+                            <i class='bx bx-chevron-down text-gray-500 dark:text-gray-400'></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="dropdown-menu" class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 z-10 hidden">
+                            <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                                <p class="text-sm font-medium text-dark dark:text-white">{{ user.first_name }} {{ user.last_name }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Faculty</p>
+                            </div>
+                            <a href="{% url 'facultyProfile' %}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-user mr-2'></i>My Profile
+                            </a>
+                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            <a href="{% url 'facultyLogout' %}" class="block px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <i class='bx bx-log-out mr-2'></i>Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-</style>
-  <!-- ======= Header ======= -->
-  <header id="header" class="header fixed-top d-flex align-items-center px-lg-5">
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Page Title -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-dark dark:text-white">Assignment Submissions</h1>
+                <nav class="flex space-x-2 text-sm text-gray-500 dark:text-gray-400 mt-2">
+                    <a href="{% url 'facultyDashboard' %}" class="hover:text-primary">Home</a>
+                    <span>/</span>
+                    <a href="{% url 'facultySubject' pk=classId %}" class="hover:text-primary">Classroom</a>
+                    <span>/</span>
+                    <a href="{% url 'facultyAssignment' pk=classId %}" class="hover:text-primary">Assignments</a>
+                    <span>/</span>
+                    <span class="text-primary">Submissions</span>
+                </nav>
+            </div>
 
-    <div class="d-flex align-items-center justify-content-between">
-      <a href="{% url 'facultyDashboard' %}" class="logo d-flex align-items-center">
-        <img src="" alt="">
-        <span class="d-lg-block">VirtualClassroom</span>
-      </a>
-    </div><!-- End Logo -->
-
-
-
-    <nav class="header-nav ms-auto">
-      <ul class="d-flex align-items-center">
-
-        <li class="nav-item dropdown pe-3">
-
-          <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="{{userDetails.facultyPic.url }}" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">{{user.first_name}} {{user.last_name}}</span>
-          </a><!-- End Profile Iamge Icon -->
-
-          <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-            <li class="dropdown-header">
-              <h6>{{user.first_name}} {{user.last_name}}</h6>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url 'facultyProfile' %}">
-                <i class="bi bi-person"></i>
-                <span>My Profile</span>
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-
-            {% if user.is_authenticated %}
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="{% url 'facultyLogout' %}">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-            {% else %}
-            <li>
-              <a class="dropdown-item d-flex align-items-center" href="#">
-                <i class="bi bi-box-arrow-right"></i>
-                <span>Sign Out</span>
-              </a>
-            </li>
-            {% endif %}
-
-          </ul><!-- End Profile Dropdown Items -->
-        </li><!-- End Profile Nav -->
-
-      </ul>
-    </nav><!-- End Icons Navigation -->
-
-  </header><!-- End Header -->
-
-  <main id="main" class="main px-lg-5 mx-lg-5">
-
-    <div class="pagetitle">
-      <h1>Assignment Submission</h1>
-      <nav>
-        <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'facultyDashboard' %}">Home</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'facultySubject' classId %}">Classroom</a></li>
-          <li class="breadcrumb-item active">Assignment Submissions</li>
-        </ol>
-      </nav>
-    </div><!-- End Page Title -->
-
-    <section class="section profile">
-
-
-      <div class="card">
-            <div class="card-body">
-              <h5 class="card-title text-center">ASSIGNMENT SUBMISSIONS</h5>
-
-              <!-- Table with stripped rows -->
-              <table class="table datatable table-striped">
-                <thead>
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Student ID</th>
-                    <th scope="col">Full Name</th>
-                    <th scope="col">Attachment</th>
-                    <th scope="col">Submission Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for user in students %}
-                  <tr>
-                    <th scope="row">{{ forloop.counter}}</th>
-                    <td>{{user.username}}</td>
-                    <td>{{user.first_name}} {{user.last_name}}</td>
-                    {% if user.username in assignments %}
-                      <td><strong><a href="{{assignments|get_item_link:user.username}}" target="_blank">View</a></strong></td>
-                      <td>{{assignments|get_date:user.username}}</td>
-                    {% else %}
-                      <td style="color:red"><strong>Not Submitted</strong></td>
-                      <td> - </td>
+            <!-- Submissions Card -->
+            <div class="card rounded-lg overflow-hidden mb-8">
+                <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 class="text-lg font-semibold text-dark dark:text-white text-center">ASSIGNMENT SUBMISSIONS</h2>
+                </div>
+                <div class="p-6">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-800">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">#</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Student ID</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Full Name</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attachment</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Submission Date</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                {% for user in students %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ forloop.counter }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ user.username }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ user.first_name }} {{ user.last_name }}</td>
+                                    {% if user.username in assignments %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <a href="{{ assignments|get_item_link:user.username }}" target="_blank" class="text-primary hover:text-secondary font-medium">
+                                            <i class='bx bx-link-external mr-1'></i> View
+                                        </a>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ assignments|get_date:user.username }}</td>
+                                    {% else %}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-500">Not Submitted</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">-</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if students|length == 0 %}
+                    <div class="text-center py-8">
+                        <div class="text-gray-400 dark:text-gray-500 mb-3">
+                            <i class='bx bx-user-x text-5xl'></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-dark dark:text-white mb-2">No students found</h3>
+                        <p class="text-gray-500 dark:text-gray-400">No students have joined this class yet</p>
+                    </div>
                     {% endif %}
-                  </tr>
-                  {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
 
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-6">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <i class='bx bxs-graduation text-2xl text-primary'></i>
+                <span class="text-xl font-bold">ATLAS</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                &copy; 2024 ATLAS. All rights reserved.
+            </p>
+        </div>
+    </footer>
 
-                </tbody>
-              </table>
-              <!-- End Table with stripped rows -->
-
-
-
-    </section>
-
-  </main><!-- End #main -->
-
-  <!-- ======= Footer ======= -->
-  {% include 'partials/_footer.html'%}
-  <!-- ======= Footer Ends ======= -->
-
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-
-  {% endblock %}
+    <!-- Dropdown Script -->
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(e) {
+            if (!document.getElementById('profile-dropdown').contains(e.target)) {
+                document.getElementById('dropdown-menu').classList.add('hidden');
+            }
+        });
+    </script>
+    
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme Toggle functionality
+        function setTheme() {
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Set initial theme based on saved preference or system preference
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            }
+        }
+        
+        // Set theme on initial load
+        setTheme();
+        
+        // Handle theme toggle button click
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                document.getElementById('sunIcon').classList.remove('hidden');
+                document.getElementById('moonIcon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                document.getElementById('moonIcon').classList.remove('hidden');
+                document.getElementById('sunIcon').classList.add('hidden');
+            }
+        });
+        
+        // Listen for changes in system theme
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (!localStorage.getItem('theme')) {
+                if (event.matches) {
+                    document.documentElement.classList.add('dark');
+                    document.getElementById('moonIcon').classList.remove('hidden');
+                    document.getElementById('sunIcon').classList.add('hidden');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.getElementById('sunIcon').classList.remove('hidden');
+                    document.getElementById('moonIcon').classList.add('hidden');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,52 +1,179 @@
-{% extends 'base.html' %}
-{% block title %}
-Admin Page
-{% endblock %}
-{% block content %}
 {% load static %}
-<main id="main" class="main px-lg-5 mx-lg-5">
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="ATLAS: Virtual Classroom for Modern Education">
+    <meta name="author" content="ATLAS Team">
+    <title>Student Logout | ATLAS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4154f1',
+                        secondary: '#717ff5',
+                        dark: '#012970',
+                        light: '#f6f9ff'
+                    }
+                }
+            },
+            darkMode: 'class'
+        }
+    </script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Custom CSS -->
+    <link href="{% static 'css/theme.css' %}" rel="stylesheet">
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
+    
+    <style>
+        /* Theme variables */
+        :root {
+            --primary-color: #4154f1;
+            --secondary-color: #717ff5;
+            --text-primary: #012970;
+            --text-secondary: #444444;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f9ff;
+            --card-bg: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #4154f1;
+            --secondary-color: #717ff5;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --card-bg: #374151;
+            --shadow-color: rgba(0, 0, 0, 0.25);
+        }
+        
+        .dark [data-theme="dark"] .dark\:text-white {
+            color: var(--text-primary);
+        }
+        
+        .dark [data-theme="dark"] .dark\:bg-gray-800 {
+            background-color: var(--card-bg);
+        }
+    </style>
+</head>
 
-
-  <style media="screen">
-    .gradient-custom-2 {
-    background-image: linear-gradient(to left bottom, #1b1e7b, #1f2685, #222f90, #26379a, #2940a5, #2940a5, #2940a5, #2940a5, #26379a, #222f90, #1f2685, #1b1e7b);
-  }
-  </style>
-  <div class="container">
-    <section class="h-100 gradient-form">
-        <div class="container py-2 h-100">
-          <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col-xl-10">
-              <div class="card  text-black" style="border-radius:30px; ">
-                <div class="row g-0">
-
-                  <div class="col-lg-6 d-flex align-items-center gradient-custom-2 .gradient-custom-2 ">
-                    <div class="text-white px-3 py-4 mx-md-4">
-                      <div class="image-container m-0">
-                      <img src="{% static 'images/logout.png'%}" class="img-fluid" alt="" >
-                      </div>
-
-                    </div>
-                  </div>
-                  <div class="col-lg-6">
-                    <div class="card-body px-md-5 py-md-5 mx-md-4  self-items-center">
-                      {% include 'partials/_alert.html' %}
-                      <div class="text-center mb-4 self-align-center">
-                        <h5 class="card-title text-center mt-lg-4 mb-2 fs-4">THANK YOU FOR VISITING !!</h5>
-                        <a href="{% url 'landing' %}" class="btn btn-primary col-10 text-center" style="background-image: linear-gradient(to left bottom, #1b1e7b, #1f2685, #222f90, #26379a, #2940a5, #2940a5, #2940a5, #2940a5, #26379a, #222f90, #1f2685, #1b1e7b);">HOME</a>
-                      </div>
-                    </div>
-                  </div>
+<body class="font-['Inter'] bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="fixed w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="{% url 'landing' %}" class="flex items-center space-x-3">
+                    <i class='bx bxs-graduation text-3xl text-primary'></i>
+                    <span class="text-2xl font-bold text-dark dark:text-white">ATLAS</span>
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none">
+                        <i class='bx bx-moon text-xl dark:text-white'></i>
+                    </button>
+                    <a href="{% url 'studentLogin' %}" class="px-4 py-2 text-primary hover:bg-primary/10 rounded-lg transition">Login Again</a>
                 </div>
-              </div>
             </div>
-          </div>
+        </nav>
+    </header>
+
+    <!-- Logout Section -->
+    <main class="flex-grow flex items-center justify-center px-6">
+        <div class="container mx-auto max-w-4xl">
+            <div class="bg-white dark:bg-gray-800 shadow-xl rounded-xl p-8 flex flex-col md:flex-row">
+                <div class="w-full md:w-1/2 flex justify-center items-center bg-gradient-to-br from-primary to-secondary p-6 rounded-l-xl">
+                    <img src="{% static 'images/logout.png' %}" alt="Logout" class="max-w-full h-auto">
+                </div>
+                <div class="w-full md:w-1/2 flex flex-col justify-center items-center p-6">
+                    {% if messages %}
+                        <div class="mb-4 w-full">
+                            {% for message in messages %}
+                                <div class="p-4 mb-4 text-sm rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300{% else %}bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300{% endif %}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-dark dark:text-white mb-4">Thank You for Visiting!</h2>
+                        <p class="text-gray-600 dark:text-gray-400 mb-6">You have been successfully logged out.</p>
+                        <a href="{% url 'landing' %}" class="px-6 py-3 bg-primary hover:bg-secondary text-white rounded-lg transition duration-300 inline-block">
+                            Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-      </section>
+    </main>
 
-  </div>
-</main><!-- End #main -->
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-6 mt-24">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex items-center justify-center space-x-3 mb-4">
+                <i class='bx bxs-graduation text-2xl text-primary'></i>
+                <span class="text-xl font-bold">ATLAS</span>
+            </div>
+            <p class="text-gray-400 text-sm">
+                &copy; 2024 ATLAS. All rights reserved.
+            </p>
+        </div>
+    </footer>
 
-  <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
-{% endblock %}
+    <!-- Theme Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleIcon = themeToggleBtn.querySelector('i');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or use system preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-theme', savedTheme);
+                htmlElement.classList.toggle('dark', savedTheme === 'dark');
+                updateIcon(savedTheme === 'dark');
+            } else {
+                // Check if user prefers dark mode
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                htmlElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                htmlElement.classList.toggle('dark', prefersDark);
+                updateIcon(prefersDark);
+            }
+            
+            // Toggle theme on button click
+            themeToggleBtn.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                htmlElement.setAttribute('data-theme', newTheme);
+                htmlElement.classList.toggle('dark');
+                localStorage.setItem('theme', newTheme);
+                
+                updateIcon(newTheme === 'dark');
+            });
+            
+            // Update icon based on current theme
+            function updateIcon(isDark) {
+                if (isDark) {
+                    themeToggleIcon.classList.remove('bx-moon');
+                    themeToggleIcon.classList.add('bx-sun');
+                } else {
+                    themeToggleIcon.classList.remove('bx-sun');
+                    themeToggleIcon.classList.add('bx-moon');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

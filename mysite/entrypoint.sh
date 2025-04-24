@@ -12,7 +12,7 @@ python manage.py migrate --noinput
 
 # Create necessary directories
 echo "Ensuring static directories exist..."
-mkdir -p /app/static /app/media
+mkdir -p /app/staticfiles /app/media
 
 # Collect static files
 echo "Collecting static files..."
