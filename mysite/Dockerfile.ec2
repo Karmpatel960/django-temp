@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     lsb-release \
     unzip \
+    ca-certificates \
     && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
     && ./aws/install \
@@ -34,7 +35,8 @@ RUN pip install --no-cache-dir \
     ec2-metadata \
     watchtower \
     boto3>=1.28.68 \
-    django-storages>=1.14.2
+    django-storages>=1.14.2 \
+    psycopg2-binary>=2.9.9
 
 # Create directories for static and media files
 RUN mkdir -p /app/staticfiles /app/media
@@ -48,7 +50,7 @@ COPY --chown=appuser:appuser . .
 # Set execute permissions for entrypoint and EC2 specific scripts
 RUN chmod +x /app/entrypoint.sh
 
-# Create EC2 specific entrypoint script
+# Create EC2 specific entrypoint script with Ubuntu 24.04 compatibility
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -64,6 +66,14 @@ else\n\
   # Fall back to IMDSv1 if necessary\n\
   export EC2_INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\n\
   export EC2_AVAILABILITY_ZONE=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)\n\
+fi\n\
+\n\
+# Detect OS for any OS-specific configurations\n\
+if [ -f /etc/os-release ]; then\n\
+  . /etc/os-release\n\
+  OS=$NAME\n\
+  VERSION_ID=$VERSION_ID\n\
+  echo "Detected OS: $OS $VERSION_ID"\n\
 fi\n\
 \n\
 export EC2_REGION=${EC2_AVAILABILITY_ZONE::-1}\n\

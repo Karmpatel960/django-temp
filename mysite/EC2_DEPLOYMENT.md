@@ -6,7 +6,7 @@ This guide provides step-by-step instructions for deploying the Django applicati
 
 1. An AWS account
 2. An EC2 instance with:
-   - Amazon Linux 2 or Ubuntu 20.04
+   - Amazon Linux 2023, Amazon Linux 2, Ubuntu 24.04, or Ubuntu 20.04
    - At least 2GB RAM and 1 vCPU
    - Security group with ports 22, 80, and 443 open
    - IAM role with permissions for:
@@ -17,7 +17,7 @@ This guide provides step-by-step instructions for deploying the Django applicati
 
 ### Launch an EC2 Instance
 
-1. Launch an EC2 instance with Amazon Linux 2 (recommended) or Ubuntu 20.04
+1. Launch an EC2 instance with Amazon Linux 2023, Amazon Linux 2, Ubuntu 24.04, or Ubuntu 20.04
 2. Attach an IAM role with appropriate permissions
 3. Ensure instance has at least 20GB of storage
 4. Connect to your instance via SSH:
@@ -32,7 +32,7 @@ ssh -i your-key.pem ubuntu@your-ec2-public-ip
 
 ### Quick Setup
 
-For a quick setup, you can use the provided setup script which now supports both Amazon Linux and Ubuntu:
+For a quick setup, you can use the provided setup script which supports Amazon Linux 2023, Amazon Linux 2, Ubuntu 24.04, and Ubuntu 20.04:
 
 ```bash
 # Clone the repository
@@ -47,7 +47,7 @@ chmod +x ec2-setup.sh
 ```
 
 The script will:
-1. Detect your OS (Amazon Linux or Ubuntu)
+1. Detect your OS (Amazon Linux 2023, Amazon Linux 2, Ubuntu 24.04, or Ubuntu 20.04)
 2. Install Docker and Docker Compose
 3. Create necessary directories
 4. Set up environment variables
@@ -55,15 +55,17 @@ The script will:
 6. Start the application
 7. Set up automatic backups
 
-### Manual Setup (Amazon Linux 2)
+### Manual Setup (Ubuntu 24.04)
 
-If you prefer to set up manually on Amazon Linux 2:
+If you prefer to set up manually on Ubuntu 24.04:
 
 1. Install Docker:
 
 ```bash
-sudo yum update -y
-sudo amazon-linux-extras install -y docker
+sudo apt-get update
+sudo apt-get upgrade -y
+sudo apt-get install -y ca-certificates curl gnupg
+sudo apt-get install -y docker.io containerd
 sudo systemctl start docker
 sudo systemctl enable docker
 sudo usermod -aG docker $USER
@@ -124,16 +126,110 @@ CLOUDWATCH_LOG_GROUP=/django/app
 EOF
 ```
 
-5. Set up CloudWatch agent (Amazon Linux):
+5. Set up CloudWatch agent (Ubuntu):
 
 ```bash
-sudo yum install -y amazon-cloudwatch-agent
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb
+sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+rm ./amazon-cloudwatch-agent.deb
 ```
 
 6. Start the application:
 
 ```bash
 sudo docker-compose -f docker-compose.ec2.yml up -d
+```
+
+### Manual Setup (Amazon Linux 2023)
+
+If you prefer to set up manually on Amazon Linux 2023:
+
+1. Install Docker:
+
+```bash
+sudo yum update -y
+# Fix curl package conflicts with --allowerasing flag if needed
+sudo yum install -y --allowerasing curl
+sudo yum install -y docker
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+# Log out and log back in to apply group changes
+```
+
+2. Follow the remaining steps as shown in the Ubuntu 24.04 section.
+
+### Manual Setup (Amazon Linux 2)
+
+If you prefer to set up manually on Amazon Linux 2:
+
+1. Install Docker:
+
+```bash
+sudo yum update -y
+sudo amazon-linux-extras install -y docker
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+# Log out and log back in to apply group changes
+```
+
+2. Follow the remaining steps as shown in the Ubuntu 24.04 section.
+
+## Troubleshooting Common Issues
+
+### Ubuntu 24.04 Specific Issues
+
+If you encounter issues with Docker on Ubuntu 24.04:
+
+```
+# Check if snap version of Docker is causing conflicts
+snap list | grep docker
+
+# If snap docker is installed and causing issues, remove it
+sudo snap remove docker
+
+# Then install using apt
+sudo apt-get install -y docker.io
+```
+
+### Package Conflicts in Amazon Linux 2023
+
+If you encounter package conflicts with curl or other packages:
+
+```
+- package curl-minimal-8.5.0-1.amzn2023.0.3.x86_64 from amazonlinux conflicts with curl provided by curl-8.5.0-1.amzn2023.0.4.x86_64 from amazonlinux
+```
+
+Use the `--allowerasing` flag to resolve conflicts:
+
+```bash
+sudo yum install -y --allowerasing curl
+```
+
+### Docker Not Starting
+
+If Docker fails to start:
+
+```bash
+# Check Docker service status
+sudo systemctl status docker
+
+# View Docker logs
+sudo journalctl -u docker
+```
+
+### IMDSv2 Token Issues
+
+If the application can't access EC2 instance metadata:
+
+```bash
+# Check if IMDSv2 is required on your instance
+aws ec2 describe-instances --instance-id $(curl -s http://169.254.169.254/latest/meta-data/instance-id) --query 'Reservations[0].Instances[0].MetadataOptions'
+
+# Verify connectivity to metadata service
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id
 ```
 
 ## SSL Certificate Setup
@@ -268,17 +364,15 @@ sudo docker-compose -f docker-compose.ec2.yml down
 sudo docker-compose -f docker-compose.ec2.yml up -d --build
 ```
 
-## Troubleshooting
+## Scaling and High Availability
 
-### Common Issues
+For production workloads requiring high availability, consider:
 
-1. **Container fails to start**: Check logs with `sudo docker logs mysite_web_1`
-2. **Database connection errors**: Verify PostgreSQL container is running and credentials are correct
-3. **SSL certificate issues**: Check that the certificate files are correctly mounted in the Nginx container
-4. **S3 access problems**: Verify IAM permissions and bucket policies
-5. **IMDSv2 token issues**: Ensure your EC2 instance has IMDSv2 enabled and accessible
-
-For more detailed troubleshooting, check the application logs in CloudWatch.
+1. Using AWS RDS instead of the containerized PostgreSQL
+2. Setting up an Auto Scaling Group with multiple EC2 instances
+3. Using an Application Load Balancer in front of your EC2 instances
+4. Using ElastiCache for session storage
+5. Migrating to ECS or EKS for container orchestration
 
 ## Security Best Practices
 
@@ -289,16 +383,6 @@ For more detailed troubleshooting, check the application logs in CloudWatch.
 5. Enable encryption for data at rest and in transit
 6. Regularly backup your database and configuration
 7. Enable IMDSv2 on your EC2 instances for enhanced security
-
-## Scaling and High Availability
-
-For production workloads requiring high availability, consider:
-
-1. Using AWS RDS instead of the containerized PostgreSQL
-2. Setting up an Auto Scaling Group with multiple EC2 instances
-3. Using an Application Load Balancer in front of your EC2 instances
-4. Using ElastiCache for session storage
-5. Migrating to ECS or EKS for container orchestration
 
 ## Troubleshooting
 

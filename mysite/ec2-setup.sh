@@ -8,14 +8,45 @@ set -e
 if [ -f /etc/os-release ]; then
     . /etc/os-release
     OS=$NAME
+    VERSION_ID=$VERSION_ID
 fi
 
-echo "Detected OS: $OS"
+echo "Detected OS: $OS $VERSION_ID"
 
 # Update system packages
 echo "Updating system packages..."
-if [[ "$OS" == *"Amazon"* ]] || [[ "$OS" == *"CentOS"* ]] || [[ "$OS" == *"Red Hat"* ]]; then
-    # Amazon Linux or RHEL-based
+if [[ "$OS" == *"Amazon"* ]]; then
+    # Amazon Linux specific
+    sudo yum update -y
+    
+    # Handle Amazon Linux 2023 vs Amazon Linux 2
+    if [[ "$VERSION_ID" == *"2023"* ]]; then
+        # Amazon Linux 2023
+        echo "Installing dependencies for Amazon Linux 2023..."
+        sudo yum install -y --allowerasing unzip tar wget git
+        # Only install packages that aren't already installed
+        if ! command -v curl &> /dev/null; then
+            sudo yum install -y --allowerasing curl
+        fi
+        
+        # Install Docker for AL2023
+        echo "Installing Docker..."
+        sudo yum install -y docker
+        sudo systemctl start docker
+        sudo systemctl enable docker
+    else
+        # Amazon Linux 2
+        echo "Installing dependencies for Amazon Linux 2..."
+        sudo yum install -y curl unzip tar wget git
+        
+        # Install Docker for AL2
+        echo "Installing Docker..."
+        sudo amazon-linux-extras install -y docker
+        sudo systemctl start docker
+        sudo systemctl enable docker
+    fi
+elif [[ "$OS" == *"CentOS"* ]] || [[ "$OS" == *"Red Hat"* ]]; then
+    # Other RHEL-based
     sudo yum update -y
     sudo yum upgrade -y
     
@@ -25,15 +56,11 @@ if [[ "$OS" == *"Amazon"* ]] || [[ "$OS" == *"CentOS"* ]] || [[ "$OS" == *"Red H
     
     # Install Docker
     echo "Installing Docker..."
-    sudo amazon-linux-extras install -y docker
+    sudo yum install -y yum-utils
+    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    sudo yum install -y docker-ce docker-ce-cli containerd.io
     sudo systemctl start docker
     sudo systemctl enable docker
-    
-    # Install Docker Compose
-    echo "Installing Docker Compose..."
-    COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
-    sudo curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
 else
     # Ubuntu/Debian-based
     sudo apt-get update
@@ -41,17 +68,49 @@ else
     
     # Install Docker
     echo "Installing Docker..."
-    sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+    
+    # Check Ubuntu version
+    if [[ "$OS" == *"Ubuntu"* ]] && [[ "$VERSION_ID" == "24.04" ]]; then
+        # Ubuntu 24.04 uses the Ubuntu repository for Docker
+        echo "Detected Ubuntu 24.04, using Ubuntu repository for Docker..."
+        sudo apt-get install -y ca-certificates curl gnupg
+        sudo apt-get install -y docker.io containerd
+        sudo systemctl start docker
+        sudo systemctl enable docker
+    else
+        # Ubuntu 20.04, 22.04 or other Debian distros
+        sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+        
+        # Add Docker's official GPG key
+        if [[ "$OS" == *"Ubuntu"* ]] && [[ "$VERSION_ID" == "22.04" ]]; then
+            # Ubuntu 22.04 
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        else
+            # Ubuntu 20.04 or other Debian
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+        fi
+        
+        sudo apt-get update
+        sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+    fi
     
     # Install Docker Compose
     echo "Installing Docker Compose..."
     COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
     sudo curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
+fi
+
+# Install Docker Compose (common for all Linux variants)
+if ! command -v docker-compose &> /dev/null; then
+    echo "Installing Docker Compose..."
+    COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
+    sudo curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+else
+    echo "Docker Compose already installed, skipping..."
 fi
 
 # Add the current user to the docker group
@@ -98,7 +157,13 @@ EOF
 echo "Setting up CloudWatch agent..."
 if [[ "$OS" == *"Amazon"* ]]; then
     # Amazon Linux
-    sudo yum install -y amazon-cloudwatch-agent
+    if [[ "$VERSION_ID" == *"2023"* ]]; then
+        # Amazon Linux 2023
+        sudo yum install -y amazon-cloudwatch-agent
+    else
+        # Amazon Linux 2
+        sudo yum install -y amazon-cloudwatch-agent
+    fi
 else
     # Ubuntu/Debian or other Linux
     if [ -f /etc/debian_version ]; then
