@@ -6,7 +6,7 @@ This guide provides step-by-step instructions for deploying the Django applicati
 
 1. An AWS account
 2. An EC2 instance with:
-   - Ubuntu 20.04 or Amazon Linux 2
+   - Amazon Linux 2 or Ubuntu 20.04
    - At least 2GB RAM and 1 vCPU
    - Security group with ports 22, 80, and 443 open
    - IAM role with permissions for:
@@ -17,18 +17,22 @@ This guide provides step-by-step instructions for deploying the Django applicati
 
 ### Launch an EC2 Instance
 
-1. Launch an EC2 instance with Ubuntu 20.04 or Amazon Linux 2
+1. Launch an EC2 instance with Amazon Linux 2 (recommended) or Ubuntu 20.04
 2. Attach an IAM role with appropriate permissions
 3. Ensure instance has at least 20GB of storage
 4. Connect to your instance via SSH:
 
 ```bash
+# For Amazon Linux
+ssh -i your-key.pem ec2-user@your-ec2-public-ip
+
+# For Ubuntu
 ssh -i your-key.pem ubuntu@your-ec2-public-ip
 ```
 
 ### Quick Setup
 
-For a quick setup, you can use the provided setup script:
+For a quick setup, you can use the provided setup script which now supports both Amazon Linux and Ubuntu:
 
 ```bash
 # Clone the repository
@@ -43,27 +47,27 @@ chmod +x ec2-setup.sh
 ```
 
 The script will:
-1. Install Docker and Docker Compose
-2. Create necessary directories
-3. Set up environment variables
-4. Configure CloudWatch monitoring
-5. Start the application
-6. Set up automatic backups
+1. Detect your OS (Amazon Linux or Ubuntu)
+2. Install Docker and Docker Compose
+3. Create necessary directories
+4. Set up environment variables
+5. Configure CloudWatch monitoring
+6. Start the application
+7. Set up automatic backups
 
-### Manual Setup
+### Manual Setup (Amazon Linux 2)
 
-If you prefer to set up manually or need to customize the setup:
+If you prefer to set up manually on Amazon Linux 2:
 
 1. Install Docker:
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo yum update -y
+sudo amazon-linux-extras install -y docker
+sudo systemctl start docker
+sudo systemctl enable docker
 sudo usermod -aG docker $USER
+# Log out and log back in to apply group changes
 ```
 
 2. Install Docker Compose:
@@ -120,7 +124,13 @@ CLOUDWATCH_LOG_GROUP=/django/app
 EOF
 ```
 
-5. Start the application:
+5. Set up CloudWatch agent (Amazon Linux):
+
+```bash
+sudo yum install -y amazon-cloudwatch-agent
+```
+
+6. Start the application:
 
 ```bash
 sudo docker-compose -f docker-compose.ec2.yml up -d
@@ -180,6 +190,53 @@ location /static/ {
 }
 ```
 
+## IAM Role Configuration
+
+For optimal security, create an IAM role with the following permissions:
+
+1. **S3 access policy** (if using S3 for media/static files):
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::your-bucket-name",
+                "arn:aws:s3:::your-bucket-name/*"
+            ]
+        }
+    ]
+}
+```
+
+2. **CloudWatch policy** (for logs and metrics):
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "logs:DescribeLogStreams"
+            ],
+            "Resource": [
+                "arn:aws:logs:*:*:*"
+            ]
+        }
+    ]
+}
+```
+
 ## Monitoring and Maintenance
 
 ### CloudWatch Monitoring
@@ -210,6 +267,28 @@ sudo docker-compose -f docker-compose.ec2.yml down
 # Update the application (after pulling new code)
 sudo docker-compose -f docker-compose.ec2.yml up -d --build
 ```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Container fails to start**: Check logs with `sudo docker logs mysite_web_1`
+2. **Database connection errors**: Verify PostgreSQL container is running and credentials are correct
+3. **SSL certificate issues**: Check that the certificate files are correctly mounted in the Nginx container
+4. **S3 access problems**: Verify IAM permissions and bucket policies
+5. **IMDSv2 token issues**: Ensure your EC2 instance has IMDSv2 enabled and accessible
+
+For more detailed troubleshooting, check the application logs in CloudWatch.
+
+## Security Best Practices
+
+1. Keep the EC2 instance updated with security patches
+2. Use strong passwords for all services
+3. Restrict access to the instance using security groups
+4. Use IAM roles with the principle of least privilege
+5. Enable encryption for data at rest and in transit
+6. Regularly backup your database and configuration
+7. Enable IMDSv2 on your EC2 instances for enhanced security
 
 ## Scaling and High Availability
 

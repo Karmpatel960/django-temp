@@ -4,24 +4,55 @@ set -e
 # EC2 Setup Script for Django Application
 # This script sets up a new EC2 instance to run the Django application
 
+# Detect OS type
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$NAME
+fi
+
+echo "Detected OS: $OS"
+
 # Update system packages
 echo "Updating system packages..."
-sudo apt-get update
-sudo apt-get upgrade -y
-
-# Install Docker and Docker Compose
-echo "Installing Docker..."
-sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-
-# Install Docker Compose
-echo "Installing Docker Compose..."
-COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
-sudo curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
+if [[ "$OS" == *"Amazon"* ]] || [[ "$OS" == *"CentOS"* ]] || [[ "$OS" == *"Red Hat"* ]]; then
+    # Amazon Linux or RHEL-based
+    sudo yum update -y
+    sudo yum upgrade -y
+    
+    # Install dependencies
+    echo "Installing dependencies..."
+    sudo yum install -y curl unzip tar wget git
+    
+    # Install Docker
+    echo "Installing Docker..."
+    sudo amazon-linux-extras install -y docker
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    
+    # Install Docker Compose
+    echo "Installing Docker Compose..."
+    COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
+    sudo curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+else
+    # Ubuntu/Debian-based
+    sudo apt-get update
+    sudo apt-get upgrade -y
+    
+    # Install Docker
+    echo "Installing Docker..."
+    sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+    
+    # Install Docker Compose
+    echo "Installing Docker Compose..."
+    COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
+    sudo curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+fi
 
 # Add the current user to the docker group
 echo "Adding user to docker group..."
@@ -63,11 +94,25 @@ LOG_TO_CLOUDWATCH=1
 CLOUDWATCH_LOG_GROUP=/django/app
 EOF
 
-# Setup Cloudwatch Agent (optional)
+# Setup Cloudwatch Agent
 echo "Setting up CloudWatch agent..."
-sudo amazon-linux-extras install -y collectd
-sudo wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
-sudo rpm -U ./amazon-cloudwatch-agent.rpm
+if [[ "$OS" == *"Amazon"* ]]; then
+    # Amazon Linux
+    sudo yum install -y amazon-cloudwatch-agent
+else
+    # Ubuntu/Debian or other Linux
+    if [ -f /etc/debian_version ]; then
+        # Debian/Ubuntu
+        wget https://s3.amazonaws.com/amazoncloudwatch-agent/debian/amd64/latest/amazon-cloudwatch-agent.deb
+        sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+        rm ./amazon-cloudwatch-agent.deb
+    else
+        # RHEL/CentOS
+        sudo yum install -y https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+    fi
+fi
+
+# Configure CloudWatch
 cat << EOF > cloudwatch-config.json
 {
   "agent": {

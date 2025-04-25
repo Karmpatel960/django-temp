@@ -6,6 +6,7 @@ ENV PYTHONUNBUFFERED=1
 ENV DOCKER_CONTAINER=1
 ENV USE_S3=1
 ENV RUNNING_ON_EC2=1
+ENV IMDSv2_TOKEN_TIMEOUT=21600
 
 # Set work directory
 WORKDIR /app
@@ -32,7 +33,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir \
     ec2-metadata \
     watchtower \
-    boto3>=1.28.68
+    boto3>=1.28.68 \
+    django-storages>=1.14.2
 
 # Create directories for static and media files
 RUN mkdir -p /app/staticfiles /app/media
@@ -50,10 +52,20 @@ RUN chmod +x /app/entrypoint.sh
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
-# Get EC2 instance metadata\n\
+# Get EC2 instance metadata (IMDSv2 compatible)\n\
 echo "Running on EC2, fetching instance metadata..."\n\
-export EC2_INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\n\
-export EC2_AVAILABILITY_ZONE=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)\n\
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: $IMDSv2_TOKEN_TIMEOUT" 2>/dev/null || echo "")\n\
+\n\
+if [ -n "$TOKEN" ]; then\n\
+  # Use IMDSv2\n\
+  export EC2_INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)\n\
+  export EC2_AVAILABILITY_ZONE=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/availability-zone)\n\
+else\n\
+  # Fall back to IMDSv1 if necessary\n\
+  export EC2_INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\n\
+  export EC2_AVAILABILITY_ZONE=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)\n\
+fi\n\
+\n\
 export EC2_REGION=${EC2_AVAILABILITY_ZONE::-1}\n\
 \n\
 # If using instance profile for S3 access, get temporary credentials\n\
