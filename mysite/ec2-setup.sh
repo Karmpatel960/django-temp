@@ -1,0 +1,166 @@
+#!/bin/bash
+set -e
+
+# EC2 Setup Script for Django Application
+# This script sets up a new EC2 instance to run the Django application
+
+# Update system packages
+echo "Updating system packages..."
+sudo apt-get update
+sudo apt-get upgrade -y
+
+# Install Docker and Docker Compose
+echo "Installing Docker..."
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+# Install Docker Compose
+echo "Installing Docker Compose..."
+COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
+sudo curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Add the current user to the docker group
+echo "Adding user to docker group..."
+sudo usermod -aG docker $USER
+echo "NOTE: You may need to log out and back in for the docker group changes to take effect."
+
+# Create directories
+echo "Creating necessary directories..."
+sudo mkdir -p /data/postgres
+sudo mkdir -p /data/backups
+sudo mkdir -p /etc/letsencrypt
+sudo mkdir -p /var/www/certbot
+sudo chown -R $USER:$USER /data
+
+# Set up environment variables
+echo "Setting up environment variables..."
+cat << 'EOF' > .env
+# Django settings
+DEBUG=0
+SECRET_KEY=$(openssl rand -hex 32)
+ALLOWED_HOSTS=localhost,127.0.0.1,$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4),$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)
+
+# Database settings
+POSTGRES_PASSWORD=$(openssl rand -hex 16)
+POSTGRES_USER=postgres
+POSTGRES_DB=django_db
+DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@db:5432/django_db
+
+# AWS settings
+USE_S3=1
+# If using EC2 IAM role, these can be left empty
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_STORAGE_BUCKET_NAME=your-bucket-name
+AWS_DEFAULT_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/[a-z]$//')
+
+# Logging
+LOG_TO_CLOUDWATCH=1
+CLOUDWATCH_LOG_GROUP=/django/app
+EOF
+
+# Setup Cloudwatch Agent (optional)
+echo "Setting up CloudWatch agent..."
+sudo amazon-linux-extras install -y collectd
+sudo wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+sudo rpm -U ./amazon-cloudwatch-agent.rpm
+cat << EOF > cloudwatch-config.json
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/nginx/access.log",
+            "log_group_name": "/ec2/nginx/access",
+            "log_stream_name": "{instance_id}"
+          },
+          {
+            "file_path": "/var/log/nginx/error.log",
+            "log_group_name": "/ec2/nginx/error",
+            "log_stream_name": "{instance_id}"
+          }
+        ]
+      }
+    }
+  },
+  "metrics": {
+    "metrics_collected": {
+      "disk": {
+        "measurement": [
+          "used_percent"
+        ],
+        "resources": [
+          "/"
+        ]
+      },
+      "mem": {
+        "measurement": [
+          "mem_used_percent"
+        ]
+      }
+    }
+  }
+}
+EOF
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:cloudwatch-config.json -s
+
+# SSL setup with certbot (optional, uncomment to use)
+# Domain name setup (replace with your actual domain)
+# echo "Setting up SSL certificates..."
+# DOMAIN="example.com"
+# EMAIL="admin@example.com"
+# sudo docker run -it --rm \
+#     -v /etc/letsencrypt:/etc/letsencrypt \
+#     -v /var/www/certbot:/var/www/certbot \
+#     certbot/certbot certonly --standalone \
+#     -d $DOMAIN -d www.$DOMAIN \
+#     --email $EMAIL --agree-tos --no-eff-email
+
+# Start the application
+echo "Starting the application..."
+sudo docker-compose -f docker-compose.ec2.yml up -d
+
+# Set up automatic updates and backups
+echo "Setting up automatic backups..."
+cat << 'EOF' > /tmp/backup.sh
+#!/bin/bash
+
+# Create a database backup
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR=/data/backups
+mkdir -p $BACKUP_DIR
+
+# PostgreSQL backup
+docker exec -t $(docker ps -q -f name=db) pg_dumpall -c -U postgres > $BACKUP_DIR/db-$TIMESTAMP.sql
+
+# Rotate backups (keep last 7 days)
+find $BACKUP_DIR -name "db-*.sql" -type f -mtime +7 -delete
+
+# Sync backups to S3 if configured
+if [[ -n "$AWS_STORAGE_BUCKET_NAME" ]]; then
+  aws s3 sync $BACKUP_DIR s3://$AWS_STORAGE_BUCKET_NAME/backups/
+fi
+EOF
+
+chmod +x /tmp/backup.sh
+sudo mv /tmp/backup.sh /usr/local/bin/backup.sh
+
+# Add to crontab
+(crontab -l 2>/dev/null || echo "") | grep -v "backup.sh" | { cat; echo "0 2 * * * /usr/local/bin/backup.sh > /tmp/backup.log 2>&1"; } | crontab -
+
+echo "EC2 setup complete! The application should now be running."
+echo "You can access it at: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
+echo "" 
+echo "Next steps:"
+echo "1. Configure your DNS to point to this server"
+echo "2. Uncomment and update the SSL certificate section in this script then run again"
+echo "3. Update the .env file with your specific settings" 

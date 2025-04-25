@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.ec2
+    restart: always
+    environment:
+      - DEBUG=0
+      - SECRET_KEY=${SECRET_KEY:-your_default_secret_key}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,_}
+      - DATABASE_URL=${DATABASE_URL:-postgres://postgres:postgres@db:5432/postgres}
+      - USE_S3=1
+      # AWS S3 settings - these can be omitted if using EC2 instance profile
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-}
+      # Logging settings
+      - LOG_TO_CLOUDWATCH=${LOG_TO_CLOUDWATCH:-0}
+      - CLOUDWATCH_LOG_GROUP=${CLOUDWATCH_LOG_GROUP:-/django/app}
+    depends_on:
+      - db
+    volumes:
+      # EC2 instance metadata requires host networking access
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Use host network mode to simplify EC2 networking
+    # Remove this for multi-container setups or if using ECS
+    # network_mode: "host"
+
+  db:
+    image: postgres:13-alpine
+    restart: always
+    volumes:
+      # Use EBS volume mount point for postgres data
+      - /data/postgres:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:1.23-alpine
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # Mount SSL certificates
+      # For Let's Encrypt
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Certbot for SSL certificate auto-renewal
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    restart: unless-stopped 

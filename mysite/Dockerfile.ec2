@@ -1,0 +1,80 @@
+FROM python:3.11-slim
+
+# Set environment variables for Python and Docker
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DOCKER_CONTAINER=1
+ENV USE_S3=1
+ENV RUNNING_ON_EC2=1
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies - including AWS CLI for EC2 instance metadata
+RUN apt-get update && apt-get install -y \
+    netcat-traditional \
+    curl \
+    postgresql-client \
+    gnupg \
+    lsb-release \
+    unzip \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf awscliv2.zip aws \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Add EC2-specific packages
+RUN pip install --no-cache-dir \
+    ec2-metadata \
+    watchtower \
+    boto3>=1.28.68
+
+# Create directories for static and media files
+RUN mkdir -p /app/staticfiles /app/media
+
+# Create non-root user
+RUN useradd -m appuser && chown -R appuser:appuser /app
+
+# Copy project files
+COPY --chown=appuser:appuser . .
+
+# Set execute permissions for entrypoint and EC2 specific scripts
+RUN chmod +x /app/entrypoint.sh
+
+# Create EC2 specific entrypoint script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Get EC2 instance metadata\n\
+echo "Running on EC2, fetching instance metadata..."\n\
+export EC2_INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)\n\
+export EC2_AVAILABILITY_ZONE=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)\n\
+export EC2_REGION=${EC2_AVAILABILITY_ZONE::-1}\n\
+\n\
+# If using instance profile for S3 access, get temporary credentials\n\
+if [ -z "$AWS_ACCESS_KEY_ID" ] && [ "$USE_S3" = "1" ]; then\n\
+  echo "No AWS credentials provided, trying to use instance profile..."\n\
+  export AWS_DEFAULT_REGION=$EC2_REGION\n\
+fi\n\
+\n\
+# Continue with normal entrypoint\n\
+exec /app/entrypoint.sh\n' > /app/ec2-entrypoint.sh \
+    && chmod +x /app/ec2-entrypoint.sh
+
+# Switch to non-root user for better security
+USER appuser
+
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
+# Expose port for gunicorn
+EXPOSE 8000
+
+# Use EC2 specific entrypoint script
+ENTRYPOINT ["/app/ec2-entrypoint.sh"] 
